@@ -1,0 +1,4 @@
+
+*.pyc
+programs/src/autopep8/
+./*/_pycache_
