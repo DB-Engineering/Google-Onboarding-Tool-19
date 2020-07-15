@@ -36,10 +36,15 @@ This repo contains a few critical pieces:
 
 **Loadsheet process:**
 1. Prepare the loadsheet
+
 	a. Get point list
+	
 	b. Put it in the loadsheet template sheet
+	
 	c. Run the RULE ENGINE over the data
+	
 	d. Manually review the unmapped points
+	
 2. Validate the loadsheet
 3. Create necessary types
 
@@ -57,40 +62,30 @@ This repo contains a few critical pieces:
 
 2. Import the raw loadsheet:
 
-	`>>> import loadsheet '../loadsheet/HoustonInitialLoadsheet.xlsx'`
+	`>>> import loadsheet '../loadsheet/Loadsheet_ALC.xlsx'`
 
 	Should get CLI confirmation
-
-	`>>> import bms '../resources/bms_exports/alc/US-MTV-QD1.csv'`
-
-	`>>> import bms '../resources/bms_exports/alc'`
 
 3. Normalize the loadsheet:
 
-	`>>> normalize '../resources/rules/exxon_rules.json'`
+	`>>> normalize '../resources/rules/google_rules.json'`
 
 	Should get CLI confirmation
 
-	`>>> normalize '../resources/rules/google_rules.json'`
-
 4. Export to a new loadsheet for review:
 
-	`>>> export excel '../loadsheet/HoustonInitialLoadsheetJr.xlsx'`
-
-	`>>> export excel '../loadsheet/US-MTV-QD1.xlsx'`
+	`>>> export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'`
 
 	Should see a new file with normalized fields filled in.
 	Rules should have been applied.
 
-5. Perform a manual review, if necessary.
+5. Perform a manual review and repeat steps 2, 3, and 4 as necessary.
 
 6. Import and validate finished loadsheet:
 
-	`>>> import loadsheet
-
-	'../loadsheet/HoustonValidatedLoadsheet.xlsx'`
+	`>>> import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'
 	
-	`>>> validate loadsheet`
+	`>>> validate`
 
 	Should run without errors
 
@@ -120,7 +115,7 @@ This repo contains a few critical pieces:
 
 	Or Autoapply exact matches and only review inexact using
 
-	`>>> apply inexact`
+	`>>> apply close`
 
 
 ## Known Issues and Future Development
