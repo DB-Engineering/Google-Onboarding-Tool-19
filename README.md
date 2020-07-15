@@ -55,9 +55,13 @@ This repo contains a few critical pieces:
 	`>>> import ontology '../ontology/yaml/resources'`
 
 	Should run without error.
+	
 	Add a fake field to the field list ('bacon_sensor') -- should return error
+	
 	Add a fake field with valid subfields ('supply_sensor') -- will NOT return an error.
+	
 	Add a new type with a fake field -- should return error
+	
 	Add duplicate fields to fake type -- should return error
 
 2. Import the raw loadsheet:
