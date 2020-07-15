@@ -1,0 +1,11 @@
+########################
+### Canonical Types  ###
+########################
+
+WEATHER_OA:
+  id: "8401050176659128320"
+  description: "Typical weather station."
+  is_canonical: true
+  implements:
+  - WEATHER
+  - OA

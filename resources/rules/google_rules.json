@@ -1,0 +1,360 @@
+{
+  "rules": [
+    {
+      "ruleName": "Remove unnecessary fields",
+      "ruleField": "objectId",
+      "rulePattern": "^$",
+      "outputs": {
+        "generalType": "N/A",
+        "required": "NO"
+      }
+    },
+    {
+      "ruleName": "Remove weird m(d)(d)(d) style points",
+      "ruleField": "objectName",
+      "rulePattern": "m\\d\\d\\d_\\d",
+      "outputs": {
+        "generalType": "N/A",
+        "required": "NO"
+      }
+    },
+    {
+      "ruleName": "Remove unnecessary applications",
+      "ruleField": "controlProgram",
+      "rulePattern": "(Demand Limit)|(Shelter)",
+      "outputs": {
+        "generalType": "N/A",
+        "required": "NO"
+      }
+    },
+    {
+      "ruleName": "ALC ObjectID ObjectType split",
+      "ruleField": "objectId",
+      "rulePattern": "(AV|BV|BI|BO|AI|AO|MSV):(\\d+)",
+      "outputs": {
+        "objectType": 1,
+        "objectId": 2
+      }
+    },
+    {
+      "ruleName": "General Type Definition - WEATHER",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bOA\\b.Conditions)",
+      "outputs": {
+        "generalType": "WEATHER",
+        "assetName": "WEATHER"
+      }
+    },
+    {
+      "ruleName": "General Type Definition - HW SYSTEM",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bHW System\\b)",
+      "outputs": {
+        "generalType": "HWS",
+        "assetName": "HWS"
+      }
+    },    
+    {
+      "ruleName": "General Type Definition - AHU ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((AHU|AC).\\d\\d?\\w?)",
+      "outputs": {
+        "generalType": "AHU",
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "General Type Definition - AC or FC ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((FCU|FC).?\\d-\\d\\d?).*IDF",
+      "outputs": {
+        "generalType": "FCU",
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "General Type Definition - AC ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((AC|AHU).?\\d-\\d\\d?).*IDF",
+      "outputs": {
+        "generalType": "AHU",
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "General Type Definition - FAN ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((\\bTF\\b|\\bEF\\b).\\d)",
+      "outputs": {
+        "generalType": "FAN",
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "General Type Definition - FAN ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((\\bTF\\b|\\bEF\\b).*(\\d-\\d\\d?))",
+      "outputs": {
+        "generalType": "FAN",
+        "assetName": 1
+      }
+    },    
+    {
+      "ruleName": "General Type Definitions - VAV ()-()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bVAV\\b|\\bCO\\b|\\bRH\\b).*(\\d-\\d-\\d\\d?)",
+      "outputs": {
+        "generalType": "VAV",
+        "assetName": [
+          "VAV-",
+          2
+        ]
+      },
+      "filters": {
+        "controlProgram": [
+          "exclude",
+          "\\bFC\\b|\\bFCU\\b|IDF"
+        ]
+      }
+    },
+    {
+      "ruleName": "General Type Definitions - IDF Room Intermediate Rule",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bVAV\\b.*\\bFC\\b)|(\\bFC\\b.*\\bVAV\\b)|(\\bVAV\\b.*\\bFCU\\b)|(\\bFCU\\b.*\\bVAV\\b)",
+      "outputs": {
+        "generalType": "IDF_FCU_VAV"
+      }
+    },
+    {
+      "ruleName": "Not Used Points - VAV",
+      "ruleField": "objectName",
+      "rulePattern": "(cfm_dev_av_1)|(cfm_hi_alm_1)|(cfm_lo_alm_1)|(damper_cycle_alm_1)|(damper_faulty_alm_1)|(dischage_air_temp_hi_days_1)|(discharge_air_temp_fail_alm_1)|(discharge_air_temp_hi_alm_1)|(discharge_air_temp_lo_alm_1)|(discharge_air_temp_lo_days_1)|(energy_saving_mode_bvo_1)|(heat_fail_alm_1)|(heat_leak_alm_1)|(heat_leak_days_1)|(heat_valve_cycle_alm_1)|(occupied_status_bvo_1)|(outside_air_humidity_avo_1)|(outside_air_temp_avo_1)|(schedule_override_off_bvo_1)|(schedule_override_on_bvo_1)|(schedule_override_time_avo_1)|(supply_air_temp_setpoint_avo_1)|(unoccupied_cfm_alm_1)|(unoccupied_freeze_bvo_1)|(warmup_request_bvo_1)|(zone_mode_msvo_1)|(zone_sensor_comm_alm_1)|(zone_sensor_fail_alm_1)|(zone_temp_hi_alm_1)|(zone_temp_lo_alm_1)|(heat_request_av_1)|(flow_offset_1_avi_1)|(active_zones_1)|(ei_weight_1)|(item_count_1)|(metric_conv_1)|(zn_ei_time_sat_1)|(total_weight_1)|(zn_enviro_indx_1)|(enviro_windx_1)|(occ_status_1)|(ac_sfan_status_bv_1)|(adaptive_learning_inhibit_bvo_1)|(co2_request_1)|(binding_loss_alm_1)|(boiler_interlock_bv_1)|(co2_airflow_request_ac_avo_1)|(co2_airflow_request_zn_avo_1)|(co2_cal_days_1)|(co2_faulty_1)|(znco2_hi_alm_1)|(common_alm_bv_1)|(cool_request_1)|(dmprleak_days_1)|(dat_hi_alm_1)|(dat_lo_alm_1)|(demand_level_avo_1)|(dat_pid_1)|(dat_pid_input_1)|(dat_pid_pidout_1)|(dat_pid_setpt_1)|(dmpr_faulty_1)|(energy_saving_mode_bv_1)|(flow_input_1)|(flow_offset_avi_1)|(flow_offset_2_avi_1)|(htleak_days_1)|(heat_mode_bvo_1)|(heat_request_1)|(dathi_days_1)|(zco2hi_days_1)|(ztmphi_days_1)|(hot_water_valve_failed_alm_1)|(datlo_days_1)|(ztmplo_days_1)|(max_heat_dat_stp_avi_1)|(oah_avo_1)|(oat_avo_1)|(occ_status_bv_1)|(optimal_start_inhibit_bvo_1)|(run_req_code_1)|(schedule_1)|(sched_ovrd_time_av_1)|(sched_ovrd_off_bv_1)|(sched_ovrd_on_bv_1)|(Occupied Cooling_1)|(Cooling Adjustment_1)|(Unoccupied Cooling_1)|(Occupied Heating_1)|(Heating Adjustment_1)|(Unoccupied Heating_1)|(stpt_adj_limit_avi_1)|(stpt_adj_ovrd_avi_1)|(press_request_1)|(unocc_frz_bvo_1)|(zn_enviro_active_zones_av_1)|(zn_enviro_indx_av_1)|(zn_enviro_total_weight_av_1)|(zn_enviro_weighting_av_1)|(zn_enviro_item_count_av_1)|(zn_enviro_time_sat_av_1)|(zn_enviro_weighted_av_1)|(zone_mode_msv_1)|(zs_comm_alm_1)|(zst_fail_alm_1)|(ztmp_hi_alm_1)|(ztmp_lo_alm_1)|(air_request_hours_bavo_1)|(air_request_percent_bavo_1)|(co2_occupancy_bv_1)|(co2_request_hours_bavo_1)|(co2_ventilation_pid_1)|(co2_ventilation_pid_input_1)|(co2_ventilation_pid_pidout_1)|(co2_ventilation_pid_setpt_1)|(cool_max_cfm_design_bavi_1)|(cool_request_hours_bavo_1)|(cool_request_percent_bavo_1)|(cool_setpoint_adjust_1)|(damper_cycling_alarm_1)|(damper_leak_alarm_1)|(damper_leak_days_bmsvi_1)|(dat_high_days_bmsvi_1)|(dat_low_days_bmsvi_1)|(dat_sense_days_bmsvi_1)|(demand_level_bavo_1)|(discharge_air_temp_high_alarm_1)|(discharge_air_temp_low_alarm_1)|(discharge_air_temp_sensor_error_alarm_1)|(discharge_air_temp_sensor_fail_alarm_1)|(energy_saving_mode_bbvo_1)|(excessive_air_cfm_request_alarm_1)|(excessive_cool_request_alarm_1)|(excessive_heat_request_alarm_1)|(excessive_venrtilation_cfm_request_alarm_1)|(heat_fail_alarm_1)|(heat_leak_days_bmsvi_1)|(heat_max_cfm_design_bavi_1)|(heat_mode_bbvo_1)|(heat_request_hours_bavo_1)|(heat_request_percent_bavo_1)|(heat_setpoint_adjust_1)|(high_flow_alarm_1)|(high_flow_days_bmsvi_1)|(high_zone_co2_days_bmsvi_1)|(high_zone_temp_alarm_1)|(high_zone_temp_days_bmsvi_1)|(hot_water_valve_cycling_alarm_1)|(hot_water_valve_leak_alarm_1)|(hot_water_valve_pid_1)|(hot_water_valve_pid_input_1)|(hot_water_valve_pid_pidout_1)|(hot_water_valve_pid_setpt_1)|(low_flow_alarm_1)|(low_flow_days_bmsvi_1)|(low_zone_temp_alarm_1)|(low_zone_temp_days_bmsvi_1)|(maintenance_mode_bbvo_1)|(metric_conversion_bavi_1)|(nonstop_alarm_1)|(nonstop_days_bmsvi_1)|(occ_min_cfm_design_bavi_1)|(occupied_cool_setpoint_1)|(occupied_heat_setpoint_1)|(occupied_run_hours_bavo_1)|(occupied_run_percent_bavo_1)|(outside_air_damper_percent_request_bavo_1)|(outside_air_humidity_bavo_1)|(outside_air_temperature_bavo_1)|(percent_cfm_deviation_bavo_1)|(purge_mode_status_bbvo_1)|(run_command_bbvo_1)|(schedule_override_time_bavo_1)|(starve_days_bmsvi_1)|(sys_run_req_1)|(unocc_min_cfm_design_bavi_1)|(unoccupied_cool_setpoint_1)|(unoccupied_heat_setpoint_1)|(vav_damper_percent_request_bavo_1)|(vav_heating_airflow_percent_bavo_1)|(vav_starve_alarm_1)|(ventilation_request_percent_bavo_1)|(warm-up_mode_bbvo_1)|(warmup_req_1)|(zone_co2_critical_high_alarm_1)|(zone_co2_high_alarm_1)|(zone_enviormental_index_weight_bavi_1)|(zone_mode_bmsvo_1)|(zone_occupancy_status_bbvo_1)|(zone_override_off_bbvo_1)|(zone_override_on_bbvo_1)|(zone_sensor_failure_alarm_1)|(active_zones_1)|(ei_weight_1)|(item_count_1)|(metric_conv_1)|(zn_ei_time_sat_1)|(total_weight_1)|(zn_enviro_indx_1)|(enviro_windx_1)|(occ_status_1)|(flow_offset_1_avi_1)|(heat_request_av_1)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bVAV\\b"
+        ]
+      }
+    },
+    {
+      "ruleName": "Not Used Points - IDF_FCU_VAV",
+      "ruleField": "objectName",
+      "rulePattern": "(cool_request_1)|(heat_request_1)|(occ_status_1)|(schedule_1)|(clg_ovrde_1)|(prs_req_out_1)|(sys_run_req_1)|(enable_chilled_water_sys_bav_1)|(idf_sf_failed_bvo_1)|(ac_name2_1)|(clg_ovrde_lock_1)|(ovrd_off_1)|(ovrd_1)|(ac_name1_1)|(run_1)|(vav_name_1)|(run_select_1)|(fan_coil_fail_1)|(dat_hi_1)|(dat_lo_1)|(sys_fail_1)|(hi_house_sat_1)|(lost_comm_to_house_ac_1)|(sf_fail_1)|(sf_hand_1)|(sf_rntm_1)|(zs_comm_1)|(zst_fail_1)|(ztmp_hi_1)|(ztmp_lo_1)|(m333_1)|(m333_setpt_1)|(m333_input_1)|(m333_pidout_1)|(m319_1)|(m319_setpt_1)|(m319_input_1)|(m319_pidout_1)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bIDF_FCU_VAV\\b"
+        ]
+      }
+    },
+    {
+      "ruleName": "Not Used Points - FAN",
+      "ruleField": "objectName",
+      "rulePattern": "(tf_fail_\\d)|(tf_hand_\\d)|(tf_rntm_\\d)|(ztmp_hi_\\d)|(ztmp_lo_\\d)|(ef_fail_\\d)|(ef_hand_\\d)|(ef_rntm_\\d)|(occ_\\d)|(override_time_remaining_\\d)|(ovrd_\\d)|(run_\\d)|(run_mode_select_\\d)|(schedule_\\d)|(ztmp_hi_\\d)|(ztmp_lo_\\d)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bFAN\\b"
+        ]
+      }
+    },
+    {
+      "ruleName": "Not Used Points - FCU",
+      "ruleField": "objectName",
+      "rulePattern": "(cool_request_\\d)|(dat_\\d)|(dat_hi_\\d)|(dat_lo_\\d)|(dx_\\d)|(heat_request_\\d)|(method_fcu_\\d)|(run_req_code_\\d)|(schedule_\\d)|(sf_fail_\\d)|(sf_hand_\\d)|(snsrfail_\\d)|(run\\d_\\d)|(run2_\\d)|(unit_failed_\\d)|(zone_color_\\d)|(zone_temp_out_\\d)|(zone_hi_\\d)|(zone_lo_\\d)|(comp_fail_\\d)|(comp_hand_\\d)|(sf_rntm_\\d)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bFCU\\b"
+        ]
+      }
+    },    
+    {
+      "ruleName": "Not Used Points - AHU",
+      "ruleField": "objectName",
+      "rulePattern": "(design_flow_\\d)|(co2_reset_avo_\\d)|(low_space_pressure_common_\\d)|(clg_cap_out_\\d)|(da_clsp_oar_av_\\d)|(da_clsp_opt_av_\\d)|(econ_min_\\d)|(econ_nok_min_\\d)|(econo_pos_disp_\\d)|(da_clsp_fix_av_\\d)|(sasp_fixed_av_\\d)|(cool_req_total_\\d)|(heat_request_\\d)|(static_press_req_total_\\d)|(local_warmup_time_avi_\\d)|(net_mode_active_\\d)|(oad_min_out_ac1_\\d)|(oae_trane_\\d)|(oah_trane_\\d)|(net_oa_damp_pos_\\d)|(pct_dsgn_flow_avo_\\d)|(net_ra_pos_status_\\d)|(run_req_code_\\d)|(dpsp_dev_av_\\d)|(sat_cmn_av_\\d)|(sf_vfd_view_\\d)|(bpsp_econ_disabled_\\d)|(vav_cfm_total_\\d)|(co2_request_\\d)|(ac_cooling_fail_out_bvo_\\d)|(eok_\\d)|(net_econ_enable_status_\\d)|(net_econ_ok_\\d)|(mechanical_cooling_enable_bbvo_\\d)|(maintenance_mode_bbvo_\\d)|(maintenance_mode_end_bbvo_\\d)|(opt_stop_bv_\\d)|(reset_zone_analytics_bvi_\\d)|(reset_zone_analytics_out_bvo_\\d)|(run_condition_\\d)|(sasp_select_bv_\\d)|(schedule_\\d)|(supply_fan_fail_out_bvo_\\d)|(unocc_cl_mode_\\d)|(unocc_ht_req_\\d)|(wu_mode_\\d)|(occ_stat_bbvo_\\d)|(da_clsp_select_msv_\\d)|(econ_control_select_\\d)|(msv_mode_active_\\d)|(run_mode_select_msv_\\d)|(autoreset_\\d)|(bind_loss_\\d)|(building_sp_high_\\d)|(building_sp_low_\\d)|(comm_fail_\\d)|(dstp_hi_alm_\\d)|(dstp_lo_alm_\\d)|(estop_alm_\\d)|(filter_alm_\\d)|(int_comm_\\d)|(man_reset_\\d)|(rat_hi_\\d)|(rat_lo_\\d)|(req_inv_\\d)|(sat_hi_\\d)|(sat_lo_\\d)|(sf_fail_\\d)|(sf_hand_\\d)|(bldg_pressure_pid_\\d)|(bldg_pressure_pid_setpt_\\d)|(bldg_pressure_pid_input_\\d)|(bldg_pressure_pid_pidout_\\d)|(econ_pid_\\d)|(econ_pid_setpt_\\d)|(econ_pid_input_\\d)|(econ_pid_pidout_\\d)|(power_exhaust_fan_fault_bi_\\d)|(ac_preheat_valve_control_ao_\\d)|(abs_pos_max_avi_\\d)|(abs_pos_min_avi_\\d)|(bldg_static_press_active_\\d)|(des_pos_max_avi_\\d)|(des_pos_min_avi_\\d)|(hwva_setpt_\\d)|(occ_bldg_press_stpt_\\d)|(oa_damper_min_avi_\\d)|(ra_damper_pos_\\d)|(bpsp_dev_av_\\d)|(unocc_bldg_press_stpt_\\d)|(bldg_static_min_oa_damper_enable_\\d)|(bldg_static_select_\\d)|(econo_ok_bv_\\d)|(htg_lockout_bvi_\\d)|(mech_cooling_allowed_bvo_\\d)|(schedule_\\d)|(crathi1_days_\\d)|(econ_min_stpt_select_msv_\\d)|(emathi_days_\\d)|(ematlo_days_\\d)|(hratlo1_days_\\d)|(run_mode_select_msv_\\d)|(bsp_hi_alm_\\d)|(bsp_lo_alm_\\d)|(econ_mat_hi_alm_\\d)|(econ_mat_lo_alm_\\d)|(ef_fail_alm_\\d)|(ef_hand_alm_\\d)|(local_binding_alm_\\d)|(mat_fail_alm_\\d)|(power_exhaust_fan_fault_alarm_\\d)|(rat_hi_alm_\\d)|(rat_lo_alm_\\d)|(supply_air_temp_hi_alm_\\d)|(supply_air_temp_lo_alm_\\d)|(bpid_\\d)|(bpid_setpt_\\d)|(bpid_input_\\d)|(bpid_pidout_\\d)|(m200_\\d)|(m200_setpt_\\d)|(m200_input_\\d)|(m200_pidout_\\d)|(bldg_pressure_pid_\\d)|(bldg_pressure_pid_setpt_\\d)|(bldg_pressure_pid_input_\\d)|(bldg_pressure_pid_pidout_\\d)|(econ_ctrl_bacnet_pid_\\d)|(econ_ctrl_bacnet_pid_setpt_\\d)|(econ_ctrl_bacnet_pid_input_\\d)|(econ_ctrl_bacnet_pid_pidout_\\d)|(active_zones_\\d)|(comm_val_\\d)|(common_\\d)|(cl1_msv_\\d)|(cool_sp_lan_\\d)|(clg_\\d)|(econo_enable_\\d)|(m480_\\d)|(econo_status_\\d)|(ei_weight_\\d)|(emerg_ovrd_\\d)|(item_count_\\d)|(filter_\\d)|(fire_\\d)|(ht_cl_mode_\\d)|(hc_mode_status_\\d)|(hi_stp_\\d)|(local_rem_\\d)|(maint_\\d)|(mat_hi_\\d)|(mat_lo_\\d)|(occ_control_\\d)|(occ_status_\\d)|(ovrd_time_lan_\\d)|(m478_\\d)|(m483_\\d)|(rad_\\d)|(oah_trane_\\d)|(saby_lan_\\d)|(sf_proof_st_\\d)|(sf_fault_\\d)|(snsrfail_\\d)|(net_space_temp_stpt_\\d)|(net_sf_config_stat_\\d)|(sf_config_\\d)|(occ_\\d)|(eok_\\d)|(net_econ_enable_status_\\d)|(schedule_\\d)|(ucs_\\d)|(unit_failed_\\d)|(unit_stop_\\d)|(stop_source_\\d)|(zone_color_\\d)|(zn_ei_time_sat_\\d)|(total_weight_\\d)|(zn_enviro_indx_\\d)|(zone_temp_out_\\d)|(zone_temp_setpt_\\d)|(sat_hi_\\d)|(sat_lo_\\d)|(enviro_windx_\\d)|(m226_\\d)|(run1_\\d)|(run2_\\d)|(method_fcu_\\d)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bAHU\\b"
+        ]
+      }
+    },
+    {
+      "ruleName": "Not Used Points - HWS",
+      "ruleField": "objectName",
+      "rulePattern": "(blr\\d_alarm_\\d)|(blr\\d_alarm_\\d)|(pump\\d_vfd_fault_\\d)|(pump\\d_vfd_fault_\\d)|(blr\\d_enabled_htstages_\\d)|(blr\\d_enabled_htstages_\\d)|(heat_req_total_\\d)|(vfd_ovrde_\\d)|(b_latch_clear_sts_\\d_\\d)|(b_latch_status_\\d_\\d)|(b_latch_clear_sts_\\d_\\d)|(b_latch_status_\\d_\\d)|(b_latching_enable_\\d)|(hwr_vav_ready_bvo_\\d)|(dp_setpoint_selection_\\d)|(enable_blr\\d_\\d)|(enable_blr\\d_\\d)|(frz_prot_bvo_\\d)|(hok_bvo_\\d)|(opt_stop_bvo_\\d)|(vfd_ovrde_lock_\\d)|(p_latch_clear_sts_\\d_\\d)|(p_latch_status_\\d_\\d)|(p_latch_clear_sts_\\d_\\d)|(p_latch_status_\\d_\\d)|(p_latching_enable_\\d)|(run_condition_\\d)|(schedule_\\d)|(system_enable_bv_\\d)|(occ_status_bvo_\\d)|(hw_setpoint_select_\\d)|(blr_rotation_method_\\d)|(hwp_rotation_method_\\d)|(run_mode_select_msv_\\d)|(b\\d_fail_\\d)|(b\\d_hand_\\d)|(b\\d_rntm_\\d)|(b\\d_hws_hi_\\d)|(b\\d_hws_lo_\\d)|(b\\d_fail_\\d)|(b\\d_hand_\\d)|(b\\d_rntm_\\d)|(b\\d_hws_hi_\\d)|(b\\d_hws_lo_\\d)|(blr\\d_alm_\\d)|(blr\\d_alm_\\d)|(cp\\d_b\\d_hand_\\d)|(cp\\d_b\\d_rntm_\\d)|(cp\\d_fail_\\d)|(cp\\d_b\\d_hand_\\d)|(cp\\d_rntm_\\d)|(cp\\d_b\\d_fail_\\d)|(hwp\\d_fail_\\d)|(hwp\\d_hand_\\d)|(hwp\\d_rntm_\\d)|(hwp\\d_fail_\\d)|(hwp\\d_hand_\\d)|(hwp\\d_rntm_\\d)|(p\\d_fault_\\d)|(p\\d_fault_\\d)|(phst_hi_\\d)|(phst_lo_\\d)|(press_hi_\\d)|(press_lo_\\d)|(req_inv_\\d)|(boiler\\d_staging_pid_ra_\\d)|(boiler\\d_staging_pid_ra_setpt_\\d)|(boiler\\d_staging_pid_ra_input_\\d)|(boiler\\d_staging_pid_ra_pidout_\\d)|(boiler\\d_staging_pid_ra_\\d)|(boiler\\d_staging_pid_ra_setpt_\\d)|(boiler\\d_staging_pid_ra_input_\\d)|(boiler\\d_staging_pid_ra_pidout_\\d)|(ra_pid_hwp_vfd_\\d)|(ra_pid_hwp_vfd_setpt_\\d)|(ra_pid_hwp_vfd_input_\\d)|(ra_pid_hwp_vfd_pidout_\\d)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bHWS\\b"
+        ]
+      }
+    },
+    {
+      "ruleName": "Not Used Points - WEATHER",
+      "ruleField": "objectName",
+      "rulePattern": "(net_bind_loss_\\d)|(oah_sens_fail_\\d)|(pri_oa_sens_fail_\\d)|(oa_sens_fail_\\d)|(cdtemp_\\d)|(hdtemp_\\d)|(local_ws_hum_update_timer_\\d)|(local_ws_temp_update_timer_\\d)|(metric_conv_\\d)|(oah_default_\\d)|(oat_default_\\d)|(primary_ws_hum_update_timer_\\d)|(primary_ws_temp_update_timer_\\d)|(common_alarm_\\d)|(oah_source_\\d)|(oat_source_\\d)|(oa_humidity_local_fail_\\d)|(oa_humidity_primary_fail_\\d)|(oa_temperature_local_fail_\\d)|(oa_temperature_primary_fail_\\d)",
+      "outputs": {
+        "required": "NO"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "\\bWEATHER\\b"
+        ]
+      }
+    },
+    {"ruleName": "Field Definition - VAV - cooling_percentage_command","ruleField": "objectName","rulePattern": "(clg_pct_avo_1)","outputs": {"required": "YES","standardFieldName":"cooling_percentage_command"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - discharge_air_temperature_sensor","ruleField": "objectName","rulePattern": "(da_temp_ai_1)|(discharge_air_temperature_ai_1)|(discharge_air_temp_ai_1)","outputs": {"required": "YES","standardFieldName":"discharge_air_temperature_sensor"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - discharge_air_temperature_setpoint","ruleField": "objectName","rulePattern": "(sat_stpt_avo_1)|(discharge_air_temp_setpoint_bavo_1)","outputs": {"required": "YES","standardFieldName":"discharge_air_temperature_setpoint"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - heating_percentage_command","ruleField": "objectName","rulePattern": "(htg_pct_avo_1)","outputs": {"required": "YES","standardFieldName":"heating_percentage_command"},"filters": {"generalType": ["include","VAV"]}},
+    {
+      "ruleName": "Field Definition - VAV - heating_water_valve_percentage_command",
+      "ruleField": "objectName",
+      "rulePattern": "(hwv_ao_1)|(hot_water_valve_command_ao_1)|(hot_water_valve_ao_1)",
+      "outputs": {
+        "required": "YES",
+        "standardFieldName": "heating_water_valve_percentage_command",
+        "units":"percent"
+      },
+      "filters": {
+        "generalType": [
+          "include",
+          "VAV"
+        ]
+      }
+    },
+    {"ruleName": "Field Definition - VAV - supply_air_damper_percentage_command","ruleField": "objectName","rulePattern": "(damper_pos_1)|(vav_damper_position_bavo_1)|(dmpr_pos_1)|(damper_pos_avo_1)","outputs": {"required": "YES","standardFieldName":"supply_air_damper_percentage_command"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - supply_air_flowrate_sensor","ruleField": "objectName","rulePattern": "(flow_1)","outputs": {"required": "YES","standardFieldName":"supply_air_flowrate_sensor"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - supply_air_flowrate_setpoint","ruleField": "objectName","rulePattern": "(flow_setpt_1)|(sup_flow_setpt_avo_1)","outputs": {"required": "YES","standardFieldName":"supply_air_flowrate_setpoint"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - zone_air_co2_concentration_sensor","ruleField": "objectName","rulePattern": "(zone_co2_asvi_1)","outputs": {"required": "YES","standardFieldName":"zone_air_co2_concentration_sensor"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - zone_air_co2_concentration_setpoint","ruleField": "objectName","rulePattern": "(zone_co2_setpoint_bavi_1)","outputs": {"required": "YES","standardFieldName":"zone_air_co2_concentration_setpoint"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - zone_air_cooling_temperature_setpoint","ruleField": "objectName","rulePattern": "(Effective Cooling_1)|(effective_cool_setpoint_1)","outputs": {"required": "YES","standardFieldName":"zone_air_cooling_temperature_setpoint"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - zone_air_heating_temperature_setpoint","ruleField": "objectName","rulePattern": "(Effective Heating_1)|(effective_heat_setpoint_1)","outputs": {"required": "YES","standardFieldName":"zone_air_heating_temperature_setpoint"},"filters": {"generalType": ["include","VAV"]}},
+    {"ruleName": "Field Definition - VAV - zone_air_temperature_sensor","ruleField": "objectName","rulePattern": "(zone_temp_asvi_1)|(zone_temperature_ai_1)","outputs": {"required": "YES","standardFieldName":"zone_air_temperature_sensor"},"filters": {"generalType": ["include","VAV"]}},
+    
+
+    {"ruleName": "Field Definition - AHU - building_air_static_pressure_sensor","ruleField": "objectName","rulePattern": "(bldg_stat_press_\\d)|(bldg_stat_press_av_\\d)|(bstp_\\d)","outputs": {"required": "YES","standardFieldName":"building_air_static_pressure_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - building_air_static_pressure_setpoint","ruleField": "objectName","rulePattern": "(bldg_press_setpt_av_\\d)|(bpsp_\\d)","outputs": {"required": "YES","standardFieldName":"building_air_static_pressure_setpoint"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - compressor_run_command","ruleField": "objectName","rulePattern": "(cl1_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - compressor_run_command_1","ruleField": "objectName","rulePattern": "(cast_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_command_1"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - compressor_run_command_2","ruleField": "objectName","rulePattern": "(cbst_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_command_2"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - compressor_run_command_3","ruleField": "objectName","rulePattern": "(ccst_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_command_3"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - compressor_run_command_4","ruleField": "objectName","rulePattern": "(cdst_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_command_4"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - discharge_air_temperature_sensor","ruleField": "objectName","rulePattern": "(dat_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - exhaust_air_damper_percentage_command","ruleField": "objectName","rulePattern": "(ea_damper_ctrl_ao_\\d)|(exh_pos_disp_\\d)","outputs": {"required": "YES","standardFieldName":"exhaust_air_damper_percentage_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - exhaust_fan_run_command","ruleField": "objectName","rulePattern": "(ef_start_stop_bo_\\d)","outputs": {"required": "YES","standardFieldName":"exhaust_fan_run_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - exhaust_fan_run_status","ruleField": "objectName","rulePattern": "(efst_\\d)|(ef_status_bv_\\d)","outputs": {"required": "YES","standardFieldName":"exhaust_fan_run_status"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - exhaust_fan_speed_frequency_sensor","ruleField": "objectName","rulePattern": "(power_exhaust_fan_hz_ai_\\d)","outputs": {"required": "YES","standardFieldName":"exhaust_fan_speed_frequency_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - exhaust_fan_speed_percentage_command","ruleField": "objectName","rulePattern": "(power_exhaust_fan_speed_control_ao_\\d)","outputs": {"required": "YES","standardFieldName":"exhaust_fan_speed_percentage_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - mixed_air_temperature_sensor","ruleField": "objectName","rulePattern": "(ma_temp_ai_\\d)|(mat_\\d)","outputs": {"required": "YES","standardFieldName":"mixed_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - outside_air_damper_percentage_command","ruleField": "objectName","rulePattern": "(oa_damper_ctrl_ao_\\d)|(oad_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_damper_percentage_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - outside_air_temperature_sensor","ruleField": "objectName","rulePattern": "(oat_trane_\\d)|(oat_trane_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - return_air_temperature_sensor","ruleField": "objectName","rulePattern": "(rat_\\d)|(ra_temp_ai_\\d)","outputs": {"required": "YES","standardFieldName":"return_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_air_static_pressure_sensor","ruleField": "objectName","rulePattern": "(stat_press_\\d)|(dstpr_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_static_pressure_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_air_static_pressure_setpoint","ruleField": "objectName","rulePattern": "(sasp_eff_avo_\\d)|(dpsp_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_static_pressure_setpoint"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_air_temperature_sensor","ruleField": "objectName","rulePattern": "(dat_\\d)|(supply_air_temp_\\d)|(sat_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_air_temperature_setpoint","ruleField": "objectName","rulePattern": "(sasp_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_temperature_setpoint"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_fan_run_command","ruleField": "objectName","rulePattern": "(ac_occ_\\d)","outputs": {"required": "YES","standardFieldName":"supply_fan_run_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_fan_run_status","ruleField": "objectName","rulePattern": "(sfst_\\d)|(sfst_\\d)","outputs": {"required": "YES","standardFieldName":"supply_fan_run_status"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - supply_fan_speed_percentage_command","ruleField": "objectName","rulePattern": "(sf_vfd_\\d)","outputs": {"required": "YES","standardFieldName":"supply_fan_speed_percentage_command"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - zone_air_heating_temperature_setpoint","ruleField": "objectName","rulePattern": "(heat_sp_lan_\\d)|(net_heat_setpt_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_heating_temperature_setpoint"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - zone_air_cooling_temperature_setpoint","ruleField": "objectName","rulePattern": "(net_cool_setpt_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_cooling_temperature_setpoint"},"filters": {"generalType": ["include","AHU"]}},
+    {"ruleName": "Field Definition - AHU - zone_air_temperature_sensor","ruleField": "objectName","rulePattern": "(zone_temp_lan_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_temperature_sensor"},"filters": {"generalType": ["include","AHU"]}},
+
+    {"ruleName": "Field Definition - FCU - compressor_run_status","ruleField": "objectName","rulePattern": "(comp_status_\\d)","outputs": {"required": "YES","standardFieldName":"compressor_run_status"},"filters": {"generalType": ["include","FCU"]}},
+    {"ruleName": "Field Definition - FCU - zone_air_cooling_temperature_setpoint","ruleField": "objectName","rulePattern": "(net_cool_setpt_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_cooling_temperature_setpoint"},"filters": {"generalType": ["include","FCU"]}},
+    {"ruleName": "Field Definition - FCU - zone_air_heating_temperature_setpoint","ruleField": "objectName","rulePattern": "(net_heat_setpt_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_heating_temperature_setpoint"},"filters": {"generalType": ["include","FCU"]}},
+    {"ruleName": "Field Definition - FCU - discharge_fan_run_command","ruleField": "objectName","rulePattern": "(sfss_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_run_command"},"filters": {"generalType": ["include","FCU"]}},
+    {"ruleName": "Field Definition - FCU - discharge_fan_run_status","ruleField": "objectName","rulePattern": "(sfst_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_run_status"},"filters": {"generalType": ["include","FCU"]}},
+    {"ruleName": "Field Definition - FCU - zone_air_temperature_sensor","ruleField": "objectName","rulePattern": "(zone_temp_\\d)|(zone_temp_asvi_\\d)|(zone_temp_bavo_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_temperature_sensor"},"filters": {"generalType": ["include","FCU"]}},
+
+
+
+
+    {"ruleName": "Field Definition - FAN - zone_air_temperature_sensor","ruleField": "objectName","rulePattern": "(zone_temp_asvi_\\d)|(zone_temp_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_temperature_sensor"},"filters": {"generalType": ["include","FAN"]}},
+    {"ruleName": "Field Definition - FAN - run_status","ruleField": "objectName","rulePattern": "(tfst_\\d)|(ef_status_\\d)","outputs": {"required": "YES","standardFieldName":"run_status"},"filters": {"generalType": ["include","FAN"]}},
+    {"ruleName": "Field Definition - FAN - run_command","ruleField": "objectName","rulePattern": "(tfss_\\d)|(efan_\\d)","outputs": {"required": "YES","standardFieldName":"run_command"},"filters": {"generalType": ["include","FAN"]}},
+    {"ruleName": "Field Definition - FAN - zone_air_cooling_temperature_sensor","ruleField": "objectName","rulePattern": "(cool_stpt_bav_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_cooling_temperature_sensor"},"filters": {"generalType": ["include","FAN"]}},
+
+    {"ruleName": "Field Definition - HWS - differential_pressure_sensor","ruleField": "objectName","rulePattern": "(delta_press_\\d)","outputs": {"required": "YES","standardFieldName":"differential_pressure_sensor"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - return_water_temperature_sensor","ruleField": "objectName","rulePattern": "(sec_hwr_temp_\\d)","outputs": {"required": "YES","standardFieldName":"return_water_temperature_sensor"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - supply_water_temperature_sensor","ruleField": "objectName","rulePattern": "(sec_hws_temp_\\d)","outputs": {"required": "YES","standardFieldName":"supply_water_temperature_sensor"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - supply_water_temperature_setpoint","ruleField": "objectName","rulePattern": "(active_hws_setpoint_\\d)","outputs": {"required": "YES","standardFieldName":"supply_water_temperature_setpoint"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - supply_water_temperature_setpoint","ruleField": "objectName","rulePattern": "(blr_shws_setpoint_\\d)","outputs": {"required": "YES","standardFieldName":"supply_water_temperature_setpoint"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - differential_pressure_setpoint","ruleField": "objectName","rulePattern": "(dpstpt_\\d)","outputs": {"required": "YES","standardFieldName":"differential_pressure_setpoint"},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - HWS - differential_pressure_setpoint","ruleField": "objectName","rulePattern": "(hot_water_differential_pressure_stpt_bav_\\d)","outputs": {"required": "YES","standardFieldName":"differential_pressure_setpoint"},"filters": {"generalType": ["include","HWS"]}},
+
+    {"ruleName": "Field Definition - BLR - supply_water_temperature_sensor","ruleField": "objectName","rulePattern": "(b(\\d)_hws_temp_\\d)","outputs": {"required": "YES","standardFieldName":"supply_water_temperature_sensor","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - BLR - circulation_pump_run_status","ruleField": "objectName","rulePattern": "(circp(\\d)_status_\\d)","outputs": {"required": "YES","standardFieldName":"circulation_pump_run_status","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - BLR - run_status","ruleField": "objectName","rulePattern": "(blr(\\d)_status_\\d)","outputs": {"required": "YES","standardFieldName":"run_status","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - BLR - run_command","ruleField": "objectName","rulePattern": "(blr(\\d)_status_\\d)","outputs": {"required": "YES","standardFieldName":"run_command","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - BLR - heater_run_command_1","ruleField": "objectName","rulePattern": "(blr(\\d)_htg_stg1_\\d)","outputs": {"required": "YES","standardFieldName":"heater_run_command_1","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - BLR - heater_run_command_2","ruleField": "objectName","rulePattern": "(blr(\\d)_htg_stg2_\\d)","outputs": {"required": "YES","standardFieldName":"heater_run_command_2","generalType":"BLR","assetName":["BLR-",2]},"filters": {"generalType": ["include","HWS"]}},
+
+    {"ruleName": "Field Definition - PMP - run_status","ruleField": "objectName","rulePattern": "(p(\\d)st_\\d)","outputs": {"required": "YES","standardFieldName":"run_status","generalType":"PMP","assetName":["HWP-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - PMP - speed_percentage_command","ruleField": "objectName","rulePattern": "(p(\\d)_vfd_output_\\d)","outputs": {"required": "YES","standardFieldName":"speed_percentage_command","generalType":"PMP","assetName":["HWP-",2]},"filters": {"generalType": ["include","HWS"]}},
+    {"ruleName": "Field Definition - PMP - run_command","ruleField": "objectName","rulePattern": "(p(\\d)ss_\\d)","outputs": {"required": "YES","standardFieldName":"run_command","generalType":"PMP","assetName":["HWP-",2]},"filters": {"generalType": ["include","HWS"]}},
+
+    {"ruleName": "Field Definition - WEATHER - outside_air_dewpoint_temperature_sensor","ruleField": "objectName","rulePattern": "(dewpoint_avo_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_dewpoint_temperature_sensor"},"filters": {"generalType": ["include","WEATHER"]}},
+    {"ruleName": "Field Definition - WEATHER - outside_air_relative_humidity_sensor","ruleField": "objectName","rulePattern": "(oa_humidity_\\d)|(humidity_\\d)|(humidity_avo_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_relative_humidity_sensor"},"filters": {"generalType": ["include","WEATHER"]}},
+    {"ruleName": "Field Definition - WEATHER - outside_air_specificenthalpy_sensor","ruleField": "objectName","rulePattern": "(enthalpy_\\d)|(enthalpy_avo_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_specificenthalpy_sensor"},"filters": {"generalType": ["include","WEATHER"]}},
+    {"ruleName": "Field Definition - WEATHER - outside_air_temperature_sensor","ruleField": "objectName","rulePattern": "(oa_temperature_\\d)|(temperature_\\d)|(temperature_avo_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_temperature_sensor"},"filters": {"generalType": ["include","WEATHER"]}},
+    {"ruleName": "Field Definition - WEATHER - outside_air_wetbulb_temperature_sensor","ruleField": "objectName","rulePattern": "(wet_bulb_avo_\\d)","outputs": {"required": "YES","standardFieldName":"outside_air_wetbulb_temperature_sensor"},"filters": {"generalType": ["include","WEATHER"]}},
+
+    {"ruleName": "Field Definition - IDF_FCU_VAV - supply_air_flowrate_sensor","ruleField": "objectName","rulePattern": "(flow_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_flowrate_sensor","generalType":"VAV"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - supply_air_flowrate_setpoint","ruleField": "objectName","rulePattern": "(flow_sp_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_flowrate_setpoint","generalType":"VAV"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - supply_air_flowrate_sensor","ruleField": "objectName","rulePattern": "(flow_input_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_flowrate_sensor","generalType":"VAV"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - supply_air_damper_percentage_command","ruleField": "objectName","rulePattern": "(damper_ao_\\d)","outputs": {"required": "YES","standardFieldName":"supply_air_damper_percentage_command","generalType":"VAV"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - chilled_water_valve_percentage_command","ruleField": "objectName","rulePattern": "(chw_valve_ctrl_\\d)","outputs": {"required": "YES","standardFieldName":"chilled_water_valve_percentage_command","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_air_temperature_setpoint","ruleField": "objectName","rulePattern": "(dasp_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_air_temperature_setpoint","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_fan_speed_percentage_command","ruleField": "objectName","rulePattern": "(dmpr_pos_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_speed_percentage_command","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_air_temperature_sensor","ruleField": "objectName","rulePattern": "(da_temp_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_air_temperature_sensor","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_fan_speed_percentage_command","ruleField": "objectName","rulePattern": "(fan_speed_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_speed_percentage_command","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_fan_run_status","ruleField": "objectName","rulePattern": "(sf_status_bvo_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_run_status","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - discharge_fan_run_status","ruleField": "objectName","rulePattern": "(sf_status_\\d)","outputs": {"required": "YES","standardFieldName":"discharge_fan_run_status","generalType":"FCU"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - zone_air_cooling_temperature_setpoint","ruleField": "objectName","rulePattern": "(cooling_setpt_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_cooling_temperature_setpoint"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+    {"ruleName": "Field Definition - IDF_FCU_VAV - zone_air_temperature_sensor","ruleField": "objectName","rulePattern": "(zone_temp_\\d)","outputs": {"required": "YES","standardFieldName":"zone_air_temperature_sensor"},"filters": {"generalType": ["include","IDF_FCU_VAV"]}},
+
+    {
+      "ruleName": "General Type Definition (After IDF Point Mapping) - FCU ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((\\bFC\\b|\\bFCU\\b).*(\\d-\\d\\d?))",
+      "outputs": {
+        "assetName": 1
+      },
+      "filters": {"generalType": ["include","FCU"]}
+    },
+    {
+      "ruleName": "General Type Definitions (After IDF Point Mapping) - VAV ()-()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bVAV\\b|\\bCO\\b|\\bRH\\b).*(\\d-\\d-\\d\\d?)",
+      "outputs": {
+        "assetName": [
+          "VAV-",
+          2
+        ]
+      },
+      "filters": {"generalType": ["include","VAV"]}
+    }
+  ]
+}

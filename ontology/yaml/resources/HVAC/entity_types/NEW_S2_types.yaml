@@ -1,0 +1,65 @@
+FCU_DFSS_DFVSC_ZTC_CHWZTC:
+  description: "Hydronic varaible speed fan coil with cooling and heating (zone temp control)."
+  is_canonical: true
+  opt_uses:
+  - discharge_air_static_pressure_sensor
+  - zone_air_co2_concentration_sensor
+  - filter_differential_pressure_sensor
+  implements:
+  - FCU
+  - DFSS
+  - DFVSC
+  - ZTC
+  - CHWZTC
+
+DMP_ED:
+  description: "Exhaust control damper."
+  is_canonical: true
+  uses:
+  - exhaust_air_static_pressure_sensor
+  implements:
+  - DMP
+  - ED
+
+DMP_SDBPC:
+  description: "Exhaust control damper."
+  is_canonical: true
+  implements:
+  - DMP
+  - SDBPC
+
+PDSCV:
+  description: "Pressure-dependent supply damper control for ventilation purposes (CO2 or VOC)."
+  is_abstract: true
+  uses:
+  - supply_air_damper_percentage_command
+  - supply_air_damper_percentage_sensor
+  implements:
+  - CONTROL
+
+SDBPC:
+  description: "Back-pressure controlling supply damper."
+  is_abstract: true
+  opt_uses:
+  - supply_air_flowrate_sensor
+  uses:
+  - supply_air_static_pressure_sensor
+  - supply_air_static_pressure_setpoint
+  - supply_air_damper_percentage_command
+  - supply_air_damper_percentage_sensor
+  implements:
+  - MONITORING
+
+VAV_PDSCV_VOCC_ZHM_CO2C:
+  description: "Pressure dependent ventilation control VAV"
+  is_canonical: true
+  implements:
+  - VAV
+  - PDSCV
+  - VOCC
+  - ZHM
+  - CO2C
+
+
+
+
