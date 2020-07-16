@@ -49,8 +49,8 @@ class Asset:
 			- full_asset_name: BMS internal name
 
 		returns: new asset objects
-
 		"""
+
 		self.building = building
 		self.general_type = general_type
 		self.type_name = type_name
@@ -65,9 +65,9 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
-			- bacnet_address: dictionary describing deviceID, objectID,
+			- bacnet_address: dictionary describing deviceId, objectId,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
 			- placeholder: flag for placeholder field creation, default false
@@ -83,7 +83,7 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -144,6 +144,7 @@ class Asset:
 
 		returns: dictionary of BMS info of passed field
 		"""
+		assert field_name in self.fields, "Field not defined; cannot remove."
 		return self.fields[field_name].get_field_details()
 
 	def get_all_field_details(self):
@@ -218,7 +219,7 @@ class Field:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -245,7 +246,7 @@ class Field:
 				assert field in bacnet_requirements, "Field '{}' not in 'bacnet_address' argument.".format(field)
 
 		else:
-			self.bms_info={'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
+			self.bms_info={'bms_type':"",'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
 			self.bacnet_address={'deviceId':'', 'objectId':'', 'objectName':'Placeholder', 'objectType':'', 'units':''}
 
 	def get_field_details(self):
