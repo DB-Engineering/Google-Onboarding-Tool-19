@@ -143,7 +143,7 @@ class Loadsheet:
 		return cls(df.to_dict('records'))
 
 	@staticmethod
-	def _to_std_headers(headers: List[str]) -> List[str]:
+	def _to_std_headers(headers: List[str]) -> List[str] -> List[str]:
 		'''
 		Removes all punctuation characters, spaces, and converts to all
 		lowercase characters. Returns standardized headers to be used
@@ -168,10 +168,10 @@ class Loadsheet:
 			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
 					   issubset(set([h.lower().replace(' ','') for h in headers]))
 
+	@staticmethod
 	def _to_std_header_mapping(
-			self,
 			orig_headers: List[str]
-			):
+			) -> Dict[str,str]:
 		'''
 		Creates a dict mapping from orig headers to strandardized 
 		headers used interally
@@ -182,13 +182,22 @@ class Loadsheet:
 	def get_std_header(
 			self,
 			header: str
-			):
+			) -> str:
 		"""
 		Returns standardized header used internaly baed on the document 
 		header passed in
 		"""
 		return self._std_header_map[header]
 
+	def get_data_row(
+			self,
+			row: int
+			) -> Dict[str, Any]:
+		pass
+
+	def get_data_row_generator(self):
+		pass
+		
 	def export_to_loadsheet(self, output_filepath):
 		"""
 		exports data in Loadsheet object to excel file
