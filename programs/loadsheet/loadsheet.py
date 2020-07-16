@@ -123,12 +123,6 @@ class Loadsheet:
 		"""
 		# hardcode header rows as [0,1] for initial release
 		df = pd.read_excel(filepath, header= 0)
-		# depreciated and included in init method 07162020 by sypks
-'''		assert cls._is_valid_headers(df.columns, True) == True, \
-				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
-				headers:\n {}".format(', '.join(df.columns),', '.join(
-					_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS))
-'''
 		return cls(df.to_dict('records'))
 
 	@classmethod
@@ -146,12 +140,6 @@ class Loadsheet:
 		"""
 		# hardcode header as row 0 for inital release
 		df = pd.read_csv(filepath, header= 0)
-		# depreciated and included in init method 07162020 by sypks
-'''		assert cls._is_valid_headers(df.columns) == True, \
-				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
-				headers:\n {}".format(', '.join(df.columns),', '.join(
-					_REQ_INPUT_HEADERS))
-'''
 		return cls(df.to_dict('records'))
 
 	@staticmethod
