@@ -187,22 +187,6 @@ class Loadsheet:
 		'''
 		'''
 
-
-	"""
-	@staticmethod
-	def _is_valid_headers(headers: List[str], filetype: str= None) -> bool:
-		'''
-		Checks column names from loadsheet or BMS file are valid as 
-		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
-		'''
-		if filetype == 'Loadsheet':
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
-		else:
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
-	"""
-
 	def export_to_loadsheet(self, output_filepath):
 		"""
 		exports data in Loadsheet object to excel file
