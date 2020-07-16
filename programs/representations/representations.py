@@ -144,7 +144,7 @@ class Asset:
 
 		returns: dictionary of BMS info of passed field
 		"""
-		assert field_name in self.fields, "Field not defined; cannot remove."
+		assert field_name in self.fields, "Field not defined; cannot find."
 		return self.fields[field_name].get_field_details()
 
 	def get_all_field_details(self):
@@ -268,6 +268,7 @@ class Assets:
 		""" Initialize the class. """
 		self.assets = {}
 		self.determined_types = {}
+		self.ununsed_data = []
 
 	def add_asset(self,building,general_type,type_name,asset_name,full_asset_name):
 		"""
@@ -291,6 +292,7 @@ class Assets:
 		args:
 			- full_asset_name: name of asset to remove
 		"""
+		assert full_asset_name in self.assets, "Asset {} does not exist.".format(full_asset_name)
 		del self.assets[full_asset_name]
 
 	def update_type(self,full_asset_name,type_name):
@@ -370,11 +372,10 @@ class Assets:
 
 		returns: list of all general types
 		"""
-		general_types = []
+		general_types = set()
 		for asset in self.assets:
 			gt = self.assets[asset].get_general_type()
-			if gt not in general_types:
-				general_types.append(gt)
+			general_types.add(gt)
 
 		return general_types
 
@@ -407,7 +408,7 @@ class Assets:
 		Load from a row of data.
 
 		args:
-			- data_row: row of data to adds
+			- data_row: row of data to add
 		"""
 
 		if data_row['fullAssetPath'] not in self.assets:
@@ -446,7 +447,6 @@ class Assets:
 			- data: dictionary of lists representing loadsheet data
 		"""
 
-		self.ununsed_data = []
 		for row in data:
 			if row['required'] == 'YES':
 				self.load_from_row(row)
