@@ -105,7 +105,7 @@ class Loadsheet:
 					[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet 
 					else _REQ_INPUT_HEADERS]))
 		self._data = data
-		self._std_header_map = Loadsheet._get_standardized_header_mapping(
+		self._std_header_map = Loadsheet._to_standardized_header_mapping(
 				data.keys())
 
 	@classmethod
@@ -143,10 +143,11 @@ class Loadsheet:
 		return cls(df.to_dict('records'))
 
 	@staticmethod
-	def _standardize_headers(headers: List[str]) -> List[str]:
+	def _to_std_headers(headers: List[str]) -> List[str]:
 		'''
 		Removes all punctuation characters, spaces, and converts to all
-		lowercase characters.
+		lowercase characters. Returns standardized headers to be used
+		internally
 		'''
 		delete_dict = {sp_char: '' for sp_char in string.punctuation}
 		delete_dict[' '] = '' # space char not in sp_char by default
@@ -167,13 +168,26 @@ class Loadsheet:
 			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
 					   issubset(set([h.lower().replace(' ','') for h in headers]))
 
-	def _get_standardized_header_mapping(
+	def _to_std_header_mapping(
 			self,
-			orig_headers: List[str],
-			standardized_headers: List[str]
+			orig_headers: List[str]
 			):
 		'''
+		Creates a dict mapping from orig headers to strandardized 
+		headers used interally
 		'''
+		std_headers = Loadsheet._to_std_headers(orig_headers)
+		return {orig: std for (std,orig) in zip(std_headers,orig_headers)}
+
+	def get_std_header(
+			self,
+			header: str
+			):
+		"""
+		Returns standardized header used internaly baed on the document 
+		header passed in
+		"""
+		return self._std_header_map[header]
 
 	def export_to_loadsheet(self, output_filepath):
 		"""
