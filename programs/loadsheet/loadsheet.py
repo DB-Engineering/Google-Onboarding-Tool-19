@@ -96,16 +96,22 @@ class Loadsheet:
 
 	def __init__(
 			self,
-			data: List[Dict[str,Any]]= list(dict())
+			data: List[Dict[str,Any]]= list(dict()),
+			is_loadsheet: bool= False
 			):
+		assert Loadsheet._is_valid_headers(data.keys(), is_loadsheet) == True,\
+				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
+				headers:\n {}".format(', '.join(df.columns),', '.join(
+					[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet 
+					else _REQ_INPUT_HEADERS]))
 		self._data = data
-
+		self._std_header_map = Loadsheet._get_standardized_header_mapping(
+				data.keys())
 
 	@classmethod
 	def from_loadsheet(
 			cls,
-			filepath: str,
-			ini_config_filepath: str= 'loadsheet_default_config.ini'
+			filepath: str
 			):
 		"""
 		Initializes loadsheet object from existing loadsheet Excel file
@@ -116,19 +122,19 @@ class Loadsheet:
 			loadsheet object
 		"""
 		# hardcode header rows as [0,1] for initial release
-		df = pd.read_excel(filepath, header= [0])
-		assert cls._is_valid_headers(df.columns, "Loadsheet") == True, \
+		df = pd.read_excel(filepath, header= 0)
+		# depreciated and included in init method 07162020 by sypks
+'''		assert cls._is_valid_headers(df.columns, True) == True, \
 				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
 				headers:\n {}".format(', '.join(df.columns),', '.join(
 					_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS))
-
+'''
 		return cls(df.to_dict('records'))
 
 	@classmethod
 	def from_bms(
 			cls,
-			filepath: str,
-			ini_config_filepath: str= 'loadsheet_default_config.ini'
+			filepath: str
 			):
 		"""
 		Initializes loadsheet object from existing BMS file
@@ -140,11 +146,12 @@ class Loadsheet:
 		"""
 		# hardcode header as row 0 for inital release
 		df = pd.read_csv(filepath, header= 0)
-		assert cls._is_valid_headers(df.columns, "ALC") == True, \
+		# depreciated and included in init method 07162020 by sypks
+'''		assert cls._is_valid_headers(df.columns) == True, \
 				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
 				headers:\n {}".format(', '.join(df.columns),', '.join(
 					_REQ_INPUT_HEADERS))
-
+'''
 		return cls(df.to_dict('records'))
 
 	@staticmethod
@@ -160,20 +167,41 @@ class Loadsheet:
 		return [sh.translate(trans_table).lower() for sh in headers]
 
 	@staticmethod
-	def _is_valid_headers(headers: List[str], filetype: str) -> bool:
+	def _is_valid_headers(headers: List[str], is_loadsheet: bool) -> bool:
 		'''
-		Checks column names from loadsheet or BMS file are valid
-		as defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
+		Checks column names from loadsheet or BMS file are valid as 
+		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
 		'''
-		supported_filetypes = ['Loadsheet', 'ALC']
-		assert filetype in supported_filetypes, "[ERROR]\tFiletype not supported"
+		if is_loadsheet:
+			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS]).\
+					   issubset(set([h.lower().replace(' ','') for h in headers]))
+		else:
+			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
+					   issubset(set([h.lower().replace(' ','') for h in headers]))
 
+	def _get_standardized_header_mapping(
+			self,
+			orig_headers: List[str],
+			standardized_headers: List[str]
+			):
+		'''
+		'''
+
+
+	"""
+	@staticmethod
+	def _is_valid_headers(headers: List[str], filetype: str= None) -> bool:
+		'''
+		Checks column names from loadsheet or BMS file are valid as 
+		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
+		'''
 		if filetype == 'Loadsheet':
 			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS]).\
 					   issubset(set([h.lower().replace(' ','') for h in headers]))
-		if filetype == 'ALC':
+		else:
 			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
 					   issubset(set([h.lower().replace(' ','') for h in headers]))
+	"""
 
 	def export_to_loadsheet(self, output_filepath):
 		"""
