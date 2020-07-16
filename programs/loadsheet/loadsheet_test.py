@@ -47,6 +47,19 @@ class TestLoadsheetMethods(unittest.TestCase):
 		#	required = NO and nulls
 		#	required = YES and non-required nulls
 		#	and required = YES and each required null field
+
+		non_null_fields	= [
+				'building',
+				'generalType',
+				'assetName',
+				'fullAssetPath',
+				'standardFieldName',
+				'deviceId',
+				'objectType',
+				'objectId',
+				'units'
+				]
+
 		self.df.loc[0] = ['L','C','N','T','P','OID','OT','DID','ON','U','NO','mM',None,'gT','tN','aN','fAP','sFN']
 		self.df.loc[1] = [None,'C','N','T','P','OID','OT','DID','ON','U','YES','mM','b','gT','tN','aN', 'fAP','sFN']
 		self.df.loc[2] = ['L','C','N','T','P','OID','OT','DID','ON','U','YES','mM',None,'gT','tN','aN','fAP','sFN']
@@ -64,9 +77,10 @@ class TestLoadsheetMethods(unittest.TestCase):
 	def test_get_dupes(self):
 		#tests the _get_duplicate_asset_fields method of the Loadsheet class
 		#passes a DataFrame with duplicate fullAssetPath-standardFieldName pairs
-		self.df.loc[1] = ['L','C','N','T','P','OID','OT','DID','ON','U','r','mM','b','gT','tN','aN','fAP','sFN']
-		self.df.loc[2] = ['L','C','N','T','P','OID','OT','DID','ON','U','r','mM','b','gT','tN','aN','fAP','sFN']
-		self.df.loc[3] = ['L','C','N','T','P','OID','OT','DID','ON','U','r','mM','b','gT','tN','aN','fullAssetPath','sFN']
+		self.df.loc[1] = ['L','C','N','T','P','OID','OT','DID','ON','U','YES','mM','b','gT','tN','aN','fAP','sFN']
+		self.df.loc[2] = ['L','C','N','T','P','OID','OT','DID','ON','U','YES','mM','b','gT','tN','aN','fAP','sFN']
+		self.df.loc[3] = ['L','C','N','T','P','OID','OT','DID','ON','U','YES','mM','b','gT','tN','aN','fullAssetPath','sFN']
+		self.df.loc[4] = ['L','C','N','T','P','OID','OT','DID','ON','U','NO','mM','b','gT','tN','aN','fullAssetPath','sFN']
 
 		self.assertEqual(["fAP sFN"], ls.Loadsheet._get_duplicate_asset_fields(self.df))
 
