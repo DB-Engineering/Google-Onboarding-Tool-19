@@ -254,7 +254,7 @@ class Handler:
 		for asset_path in self.reps.assets:
 			asset = self.reps.assets[asset_path]
 			field_hash = _convert_to_base64(asset.get_fields())
-			gT = asset.general_type
+			gT = asset.general_type.lower()
 			if gT not in types.keys():
 				types[gT] = {}
 			if field_hash not in types[gT].keys():
@@ -263,7 +263,10 @@ class Handler:
 
 		#now we print
 		if general_type is not None:
-			relevant_assets = types[general_type]
+			if general_type.lower() not in types.keys():
+				print(f"[ERROR]\tGeneral Type {general_type} not present in loadsheet. Valid types are {[type for type in types.keys()]}")
+				return
+			relevant_assets = types[general_type.lower()]
 			_print_type(general_type, relevant_assets)
 		else:
 			for type in types.keys():
