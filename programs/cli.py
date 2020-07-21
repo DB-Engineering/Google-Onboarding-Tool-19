@@ -165,10 +165,11 @@ class Mapper(cmd.Cmd):
 
 		generalType = None
 		if len(inputs) > 0:
-			generalType = inputs[1]
+			generalType = inputs[0]
 
 
 		self.handler.review_types(generalType)
+
 
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
