@@ -95,10 +95,11 @@ class Rule:
 				ismatch = False
 				self.log.append(f'[WARN] Filter field ({fF}) not in message.')
 				return
-			elif dataJson[fF] is None or dataJson[fF] != dataJson[fF]:
-				#to catch NaN, we check if dataJson[fF] equals itself
-				dataJson[fF] = ''
 			else:
+				if dataJson[fF] is None or dataJson[fF] != dataJson[fF]:
+					#to catch NaN, we check if dataJson[fF] equals itself
+					### None space change made by akoltko 20200716
+					dataJson[fF] = ''
 				ismatch = bool(fP.search(dataJson[fF]))
 				self.log.append(f'[INFO] Filter field ({fF}) with pattern  ({fP}) and type ({fT}): {ismatch}')
 			isinclude = fT =='include'
@@ -129,9 +130,10 @@ class Rule:
 		else:
 			# If the rule field doesnt have a value, throw it away.
 			if dataJson[self.ruleField] is None or dataJson[self.ruleField] != dataJson[self.ruleField]:
-				matches = False
-			else:
-				matches = self.rulePattern.search(dataJson[self.ruleField])
+				### None space change made by akoltko 20200716
+				dataJson[self.ruleField] = ''
+
+			matches = self.rulePattern.search(str(dataJson[self.ruleField]))
 
 			if matches:
 				self.log.append(f'[INFO] Rule "{self.rulePattern}" applied to "{self.ruleField}" ({dataJson[self.ruleField]}): MATCHED')
