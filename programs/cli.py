@@ -150,7 +150,7 @@ class Mapper(cmd.Cmd):
 
 	def do_review(self, args):
 		"""			Review GeneralTypes and Matches. Loadsheet must be validated
-			usage: review <generalTypes/matches> <optional generalType> """
+			usage: review <optional generalType> """
 
 		if not self.handler.validated:
 			print("[ERROR]\tLoadsheet isn't validated yet. Run 'validate' first.")
@@ -159,26 +159,18 @@ class Mapper(cmd.Cmd):
 
 		inputs = args.split()
 
-		if len(inputs) not in [1,2]:
+		if len(inputs) > 1:
 			print("[ERROR]\tNot the correct number of arguments. See help for details on review function.")
 			return
 
-		review_type = inputs[0]
 		generalType = None
-		limit = 0
-		if len(inputs) > 1:
-			generalType = inputs[1]
-		if len(inputs) > 2:
-			limit = inputs[2]
+		if len(inputs) > 0:
+			generalType = inputs[0]
 
-		if review_type == 'matches':
-			self.handler.review_matches()
-		elif review_type == 'generalTypes':
-			self.handler.review_types(generalType)
-		else:
-			print(f"[ERROR]\t{review_type} is not a valid review method. See help for details on review function.")
-			return
 
+		self.handler.review_types(generalType)
+
+		
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
 			usage: match """
@@ -213,6 +205,7 @@ class Mapper(cmd.Cmd):
 		for asset in self.handler.apply_matches():
 			match_type = asset.match.match_type
 			if match_type in question_types:
+				print(f"ASSET NAME: {asset.full_asset_name}")
 				asset.match.print_comparison()
 				action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
 				if action == 'apply':

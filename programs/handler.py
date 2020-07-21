@@ -3,7 +3,50 @@ import representations.representations
 import ontology.ontology
 import loadsheet.loadsheet as load
 from pretty import PrettyPrint
+import base64
 
+
+def _convert_to_base64(data):
+	"""
+	Convert a data object into a base64 message.
+	Used as a codeword to uniquely identify each asset type
+	"""
+
+	if isinstance(data,set):
+		data = list(data)
+		data.sort()
+		data = tuple(data)
+		data = str(data)
+
+	if isinstance(data,list):
+		data.sort()
+		data = tuple(data)
+		data = str(data)
+
+	if isinstance(data,tuple):
+		data = str(data)
+
+	encoded_bytes = base64.b64encode(data.encode("utf-8"))
+	encoded_str = str(encoded_bytes, "utf-8")
+
+	return encoded_str
+
+def _print_type(type, type_dict):
+	"""
+	prints out a type's assets and fields
+	"""
+	print(f"ASSET GENERAL TYPE: {type}")
+	print("--------------------------------------------------------------------------------")
+	for field_hash in type_dict.keys():
+		assets = type_dict[field_hash][0]
+		fields = type_dict[field_hash][1]
+		col_width = max(len(field) for field in fields) + 3
+
+		print(f"ASSETS: {assets}\n")
+		print("FIELDS")
+		print("="*col_width)
+		print("\n".join(fields))
+		print("\n\n")
 
 class Handler:
 	"""
@@ -197,23 +240,37 @@ class Handler:
 			print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
 			return
 
+		'''
+		types is a dictionary of dictionary of list pairs
+		each instance is of form
+		"general_type":{
+			"fields_hash":[[list_of asset paths],[list of type fields]],
+			"fields_hash":[[list_of asset paths],[list of type fields]]
+		}
+		'''
+
 		types = {}
 
 		for asset_path in self.reps.assets:
 			asset = self.reps.assets[asset_path]
-			if asset.general_type not in types.keys():
-				types[asset.general_type] = []
-			types[asset.general_type].append(asset.full_asset_name)
+			field_hash = _convert_to_base64(asset.get_fields())
+			gT = asset.general_type.lower()
+			if gT not in types.keys():
+				types[gT] = {}
+			if field_hash not in types[gT].keys():
+				types[gT][field_hash] = [[],asset.get_fields()]
+			types[gT][field_hash][0].append(asset.full_asset_name)
 
+		#now we print
 		if general_type is not None:
-			if general_type not in types.keys():
-				print(f"[ERROR]\t{general_type} is not in loadsheet. General types found are {[type for type in types]}")
+			if general_type.lower() not in types.keys():
+				print(f"[ERROR]\tGeneral Type {general_type} not present in loadsheet. Valid types are {[type for type in types.keys()]}")
 				return
-			print(f"[{general_type}]: {types[general_type]}")
+			relevant_assets = types[general_type.lower()]
+			_print_type(general_type, relevant_assets)
 		else:
-			for type in types:
-				print(f"[{type}]: {types[type]}")
-				print('---------------------------------------------------------------------------------------------------------------------------------------------------\n\n')
+			for type in types.keys():
+				_print_type(type, types[type])
 
 	def review_matches(self):
 		"""

@@ -49,8 +49,8 @@ class Asset:
 			- full_asset_name: BMS internal name
 
 		returns: new asset objects
-
 		"""
+
 		self.building = building
 		self.general_type = general_type
 		self.type_name = type_name
@@ -65,9 +65,9 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
-			- bacnet_address: dictionary describing deviceID, objectID,
+			- bacnet_address: dictionary describing deviceId, objectId,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
 			- placeholder: flag for placeholder field creation, default false
@@ -83,7 +83,7 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -129,9 +129,9 @@ class Asset:
 
 	def get_fields(self):
 		"""
-		Get the names of the fields on the asset.
+		Get the field names on the asset.
 
-		returns: list of field objects
+		returns: list of field name strings
 		"""
 		return [field for field in self.fields]
 
@@ -144,6 +144,7 @@ class Asset:
 
 		returns: dictionary of BMS info of passed field
 		"""
+		assert field_name in self.fields, "Field not defined; cannot find."
 		return self.fields[field_name].get_field_details()
 
 	def get_all_field_details(self):
@@ -218,7 +219,7 @@ class Field:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -245,7 +246,7 @@ class Field:
 				assert field in bacnet_requirements, "Field '{}' not in 'bacnet_address' argument.".format(field)
 
 		else:
-			self.bms_info={'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
+			self.bms_info={'bms_type':"",'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
 			self.bacnet_address={'deviceId':'', 'objectId':'', 'objectName':'Placeholder', 'objectType':'', 'units':''}
 
 	def get_field_details(self):
@@ -267,6 +268,7 @@ class Assets:
 		""" Initialize the class. """
 		self.assets = {}
 		self.determined_types = {}
+		self.ununsed_data = []
 
 	def add_asset(self,building,general_type,type_name,asset_name,full_asset_name):
 		"""
@@ -290,6 +292,7 @@ class Assets:
 		args:
 			- full_asset_name: name of asset to remove
 		"""
+		assert full_asset_name in self.assets, "Asset {} does not exist.".format(full_asset_name)
 		del self.assets[full_asset_name]
 
 	def update_type(self,full_asset_name,type_name):
@@ -369,11 +372,10 @@ class Assets:
 
 		returns: list of all general types
 		"""
-		general_types = []
+		general_types = set()
 		for asset in self.assets:
 			gt = self.assets[asset].get_general_type()
-			if gt not in general_types:
-				general_types.append(gt)
+			general_types.add(gt)
 
 		return general_types
 
@@ -406,7 +408,7 @@ class Assets:
 		Load from a row of data.
 
 		args:
-			- data_row: row of data to adds
+			- data_row: row of data to add
 		"""
 
 		if data_row['fullAssetPath'] not in self.assets:
@@ -445,7 +447,6 @@ class Assets:
 			- data: dictionary of lists representing loadsheet data
 		"""
 
-		self.ununsed_data = []
 		for row in data:
 			if row['required'] == 'YES':
 				self.load_from_row(row)
