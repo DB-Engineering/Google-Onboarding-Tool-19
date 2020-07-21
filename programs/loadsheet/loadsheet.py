@@ -24,31 +24,23 @@ from rules.rules import Rules
 # Module GOBAL and CONTRAINTS
 
 _REQ_INPUT_HEADERS = [
-		"objectId",
-		"objectType",
-		"deviceId",
-		"objectName",
+		"objectid",
+		"objecttype",
+		"deviceid",
+		"objectname",
 		'units'
 		]
 
 _REQ_OUTPUT_HEADERS = [
 		'required',
-		'manuallyMapped',
+		'manuallymapped',
 		'building',
-		'generalType',
-		'typeName',
-		'assetName',
-		'fullAssetPath',
-		'standardFieldName'
+		'generaltype',
+		'typename',
+		'assetname',
+		'fullassetpath',
+		'standardfieldname'
 		]
-
-_INPUT_HEADER_MAP = {
-		"Object ID":"objectId",
-		"Object Type":"objectType",
-		"Device ID":"deviceId",
-		"Object Name":"objectName",
-		'Units':'units'
-		}
 
 class Loadsheet:
 	"""
@@ -92,21 +84,22 @@ class Loadsheet:
 
 	TODOs:
 		- ini_config not used but will be added in future
+		- all rows will have same headers, so add header check
 	"""
 
 	def __init__(
 			self,
-			data: List[Dict[str,Any]]= list(dict()),
-			is_loadsheet: bool= False
+			data: List[Dict[str,Any]],
+			std_header_map: Dict[str,str],
+			is_loadsheet: bool= False,
 			):
-		assert Loadsheet._is_valid_headers(data.keys(), is_loadsheet) == True,\
+		assert Loadsheet._is_valid_headers(data[0].keys(), is_loadsheet) == True,\
 				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
-				headers:\n {}".format(', '.join(df.columns),', '.join(
-					[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet 
+				headers:\n {}".format(', '.join(data[0].keys()),', '.join(
+					*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet
 					else _REQ_INPUT_HEADERS]))
 		self._data = data
-		self._std_header_map = Loadsheet._to_standardized_header_mapping(
-				data.keys())
+		self._std_header_map = std_header_map
 
 	@classmethod
 	def from_loadsheet(
@@ -123,7 +116,10 @@ class Loadsheet:
 		"""
 		# hardcode header rows as [0,1] for initial release
 		df = pd.read_excel(filepath, header= 0)
-		return cls(df.to_dict('records'))
+		std_header_map = Loadsheet._to_std_header_mapping(
+				df.columns)
+		df.columns = std_header_map.keys()
+		return cls(df.to_dict('records'), std_header_map, True)
 
 	@classmethod
 	def from_bms(
@@ -140,10 +136,16 @@ class Loadsheet:
 		"""
 		# hardcode header as row 0 for inital release
 		df = pd.read_csv(filepath, header= 0)
-		return cls(df.to_dict('records'))
+		std_header_map = Loadsheet._to_std_header_mapping(
+				df.columns)
+		df.columns = std_header_map.keys()
+		return cls(df.to_dict('records'), std_header_map)
+
+	def _rename_to_std(df):
+		df.columns = self._std_header_map.values()
 
 	@staticmethod
-	def _to_std_headers(headers: List[str]) -> List[str] -> List[str]:
+	def _to_std_headers(headers: List[str]) -> List[str]:
 		'''
 		Removes all punctuation characters, spaces, and converts to all
 		lowercase characters. Returns standardized headers to be used
@@ -158,33 +160,34 @@ class Loadsheet:
 	@staticmethod
 	def _is_valid_headers(headers: List[str], is_loadsheet: bool) -> bool:
 		'''
-		Checks column names from loadsheet or BMS file are valid as 
+		Checks column names from loadsheet or BMS file are valid as
 		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
 		'''
+		trans_headers = Loadsheet._to_std_headers(headers)
 		if is_loadsheet:
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
+			return set(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS).\
+					   issubset(set(trans_headers))
 		else:
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
+			return set(_REQ_INPUT_HEADERS).\
+					   issubset(set(trans_headers))
 
 	@staticmethod
 	def _to_std_header_mapping(
 			orig_headers: List[str]
 			) -> Dict[str,str]:
 		'''
-		Creates a dict mapping from orig headers to strandardized 
+		Creates a dict mapping from orig headers to strandardized
 		headers used interally
 		'''
 		std_headers = Loadsheet._to_std_headers(orig_headers)
-		return {orig: std for (std,orig) in zip(std_headers,orig_headers)}
+		return {std: orig for (std,orig) in zip(std_headers,orig_headers)}
 
 	def get_std_header(
 			self,
 			header: str
 			) -> str:
 		"""
-		Returns standardized header used internaly baed on the document 
+		Returns standardized header used internally based on the document
 		header passed in
 		"""
 		return self._std_header_map[header]
@@ -197,7 +200,7 @@ class Loadsheet:
 
 	def get_data_row_generator(self):
 		pass
-		
+
 	def export_to_loadsheet(self, output_filepath):
 		"""
 		exports data in Loadsheet object to excel file
@@ -376,7 +379,13 @@ class Loadsheet:
 			Note - See rules/rules.py for further information
 			"""
 			r = Rules(rule_file)
+
 			for row in self._data:
+
+
+
+				if 'manuallyMapped'not in row.keys():
+					row['manuallyMapped'] = ''
 				if row['manuallyMapped'] == 'YES':
 					continue
 				else:
