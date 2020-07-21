@@ -204,8 +204,10 @@ class Mapper(cmd.Cmd):
 		# TODO: see if anyone can figure out how to move this to backend
 		for asset in self.handler.apply_matches():
 			match_type = asset.match.match_type
+			print("\n")
+			print(f"ASSET NAME: {asset.full_asset_name}")
+			print(f"ASSET TYPE: {asset.general_type}")
 			if match_type in question_types:
-				print(f"ASSET NAME: {asset.full_asset_name}")
 				asset.match.print_comparison()
 				action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
 				if action == 'apply':
