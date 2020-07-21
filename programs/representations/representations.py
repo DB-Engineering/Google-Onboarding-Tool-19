@@ -129,9 +129,9 @@ class Asset:
 
 	def get_fields(self):
 		"""
-		Get the names of the fields on the asset.
+		Get the field names on the asset.
 
-		returns: list of field objects
+		returns: list of field name strings
 		"""
 		return [field for field in self.fields]
 
