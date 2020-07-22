@@ -247,13 +247,13 @@ class Loadsheet:
 		if non_null_fields is None:
 			non_null_fields	= [
 					'building',
-					'generalType',
-					'assetName',
-					'fullAssetPath',
-					'standardFieldName',
-					'deviceId',
-					'objectType',
-					'objectId',
+					'generaltype',
+					'assetname',
+					'fullassetpath',
+					'standardfieldname',
+					'deviceid',
+					'objecttype',
+					'objectid',
 					'units'
 					]
 
@@ -268,7 +268,7 @@ class Loadsheet:
 		null_fields = self._find_null_fields(df, non_null_fields)
 		assert len(null_fields) == 0, '\n'.join(
 					  ["There are rows with missing fields:"]+
-					  [f"\t\t{uid}" for uid in null_fields]
+					  [f"\t\t{uid + 2}" for uid in null_fields]
 					 )
 
 		#check for duplicate fullAssetPath-standardFieldName combos
