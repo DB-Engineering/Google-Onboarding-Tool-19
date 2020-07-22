@@ -4,6 +4,7 @@ __author__ = 'Trevor S., Shane S., Andrew K.'
 # Standard Packages
 import os
 import sys
+import string
 
 from typing import Optional
 from typing import Union
@@ -21,44 +22,25 @@ sys.path.append('../')
 from rules.rules import Rules
 
 # Module GOBAL and CONTRAINTS
-LOADSHEET_DEFAULT_CONFIG = 'loadsheet_default_config.ini'  # TODO: Not used but will be added in future
 
 _REQ_INPUT_HEADERS = [
-		"location",
-		"controlProgram",
-		"name",
-		"type",
-		"path",
-		"objectId",
-		"objectType",
-		"deviceId",
-		"objectName",
+		"objectid",
+		"objecttype",
+		"deviceid",
+		"objectname",
 		'units'
 		]
 
 _REQ_OUTPUT_HEADERS = [
 		'required',
-		'manuallyMapped',
+		'manuallymapped',
 		'building',
-		'generalType',
-		'typeName',
-		'assetName',
-		'fullAssetPath',
-		'standardFieldName'
+		'generaltype',
+		'typename',
+		'assetname',
+		'fullassetpath',
+		'standardfieldname'
 		]
-
-_INPUT_HEADER_MAP = {
-		"Location":"location",
-		"Control Program":"controlProgram",
-		"Name":"name",
-		"Type":"type",
-		"Path":"path",
-		"Object ID":"objectId",
-		"Object Type":"objectType",
-		"Device ID":"deviceId",
-		"Object Name":"objectName",
-		'Units':'units'
-		}
 
 class Loadsheet:
 	"""
@@ -102,38 +84,27 @@ class Loadsheet:
 
 	TODOs:
 		- ini_config not used but will be added in future
+		- all rows will have same headers, so add header check
 	"""
 
 	def __init__(
 			self,
-			data: List[Dict[str,Any]]= list(dict())
+			data: List[Dict[str,Any]],
+			std_header_map: Dict[str,str],
+			is_loadsheet: bool= False,
 			):
+		assert Loadsheet._is_valid_headers(data[0].keys(), is_loadsheet) == True,\
+				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
+				headers:\n {}".format(', '.join(data[0].keys()),', '.join(
+					*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet
+					else _REQ_INPUT_HEADERS]))
 		self._data = data
-
-		''' # this functionality is not currently supported for initial
-			# commit. ini_config_filepath arg has been included for
-			# future feature implementation 07062020 by sypks
-		_REQ_INPUT_HEADERS = self._load_ini_config(
-				section= 'required input header',
-				config_file_path= config_file_path,
-				return_key_only= True
-				)
-		_REQ_OUTPUT_HEADERS = self._load_ini_config(
-				section= 'required output header',
-				config_file_path= config_file_path,
-				return_key_only= True)
-		self._map_input_headers = self._load_ini_config(
-				section= 'required input header',
-				config_file_path= config_file_path
-				)
-		'''
-
+		self._std_header_map = std_header_map
 
 	@classmethod
 	def from_loadsheet(
 			cls,
-			filepath: str,
-			ini_config_filepath: str= 'loadsheet_default_config.ini'
+			filepath: str
 			):
 		"""
 		Initializes loadsheet object from existing loadsheet Excel file
@@ -144,22 +115,16 @@ class Loadsheet:
 			loadsheet object
 		"""
 		# hardcode header rows as [0,1] for initial release
-		df = pd.read_excel(filepath, header= [0])
-
-		# get_level_values(1) returns the 2nd index of multi-index
-		#df.columns = df.columns.get_level_values(0)
-		assert cls._is_valid_headers(df.columns, "Loadsheet") == True, \
-				"[ERROR] loadsheet headers: " +\
-				"{} do not match configuration headers: {}".format(', '.join(df.columns),
-				', '.join(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS))
-
-		return cls(df.to_dict('records'))
+		df = pd.read_excel(filepath, header= 0)
+		std_header_map = Loadsheet._to_std_header_mapping(
+				df.columns)
+		df.columns = std_header_map.keys()
+		return cls(df.to_dict('records'), std_header_map, True)
 
 	@classmethod
 	def from_bms(
 			cls,
-			filepath: str,
-			ini_config_filepath: str= 'loadsheet_default_config.ini'
+			filepath: str
 			):
 		"""
 		Initializes loadsheet object from existing BMS file
@@ -171,54 +136,70 @@ class Loadsheet:
 		"""
 		# hardcode header as row 0 for inital release
 		df = pd.read_csv(filepath, header= 0)
+		std_header_map = Loadsheet._to_std_header_mapping(
+				df.columns)
+		df.columns = std_header_map.keys()
+		return cls(df.to_dict('records'), std_header_map)
 
-		assert cls._is_valid_headers(df.columns, "ALC") == True, \
-				"Error loadsheet headers: {} do not match configuration ".format(', '.join(df.columns)) +\
-				"headers: {}".format(', '.join(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS))
-
-		return cls(df.to_dict('records'))
+	def _rename_to_std(df):
+		df.columns = self._std_header_map.values()
 
 	@staticmethod
-	def _is_valid_headers(headers: List[str], filetype: str) -> bool:
+	def _to_std_headers(headers: List[str]) -> List[str]:
 		'''
-		Checks column names from loadsheet or BMS file are valid
-		as defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
+		Removes all punctuation characters, spaces, and converts to all
+		lowercase characters. Returns standardized headers to be used
+		internally
 		'''
-		supported_filetypes = ['Loadsheet', 'ALC']
-		assert filetype in supported_filetypes, "[ERROR]\tFiletype not supported"
+		delete_dict = {sp_char: '' for sp_char in string.punctuation}
+		delete_dict[' '] = '' # space char not in sp_char by default
+		trans_table = str.maketrans(delete_dict)
 
-		if filetype == 'Loadsheet':
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
-		if filetype == 'ALC':
-			return set([h.lower().replace(' ','') for h in _REQ_INPUT_HEADERS]).\
-					   issubset(set([h.lower().replace(' ','') for h in headers]))
+		return [sh.translate(trans_table).lower() for sh in headers]
 
-	# _load_ini_config feature currently not implemented for initial
-	# commit removed 07062020 by sypks
-	'''
-	def _load_ini_config(
+	@staticmethod
+	def _is_valid_headers(headers: List[str], is_loadsheet: bool) -> bool:
+		'''
+		Checks column names from loadsheet or BMS file are valid as
+		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
+		'''
+		trans_headers = Loadsheet._to_std_headers(headers)
+		if is_loadsheet:
+			return set(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS).\
+					   issubset(set(trans_headers))
+		else:
+			return set(_REQ_INPUT_HEADERS).\
+					   issubset(set(trans_headers))
+
+	@staticmethod
+	def _to_std_header_mapping(
+			orig_headers: List[str]
+			) -> Dict[str,str]:
+		'''
+		Creates a dict mapping from orig headers to strandardized
+		headers used interally
+		'''
+		std_headers = Loadsheet._to_std_headers(orig_headers)
+		return {std: orig for (std,orig) in zip(std_headers,orig_headers)}
+
+	def get_std_header(
 			self,
-			section: str,
-			ini_config_filepath: str,
-			return_key_only: bool= False
-			):
-		# initilize and read config_file_path, key-with-no-value ok
-				config = cp.RawConfigParser(allow_no_value= True)
-				config.optionxform = str # specify keys to be case-sensitive
-				config.read(ini_config_file_path)
+			header: str
+			) -> str:
+		"""
+		Returns standardized header used internally based on the document
+		header passed in
+		"""
+		return self._std_header_map[header]
 
-				# check for valid section in config_file_path
-				assert config.has_section(section) == True, \
-							 'configuration file does not contain section: %s' % section
+	def get_data_row(
+			self,
+			row: int
+			) -> Dict[str, Any]:
+		pass
 
-				# return either (key,value) pair or just the key based on
-				# boolean value of return_key_only
-				if not return_key_only:
-						return {key: value for key, value in config.items(section)}
-				else:
-						return [key for key, _ in config.items(section)]
-	'''
+	def get_data_row_generator(self):
+		pass
 
 	def export_to_loadsheet(self, output_filepath):
 		"""
@@ -398,7 +379,13 @@ class Loadsheet:
 			Note - See rules/rules.py for further information
 			"""
 			r = Rules(rule_file)
+
 			for row in self._data:
+
+
+
+				if 'manuallyMapped'not in row.keys():
+					row['manuallyMapped'] = ''
 				if row['manuallyMapped'] == 'YES':
 					continue
 				else:

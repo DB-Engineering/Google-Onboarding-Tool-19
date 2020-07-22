@@ -35,7 +35,7 @@ class Rule:
 		self.caseSensitive = caseSensitive
 		self.ruleName = ruleJson['ruleName']
 		#print(self.ruleName)
-		self.ruleField = ruleJson['ruleField']
+		self.ruleField = ruleJson['ruleField'].lower()
 		if type(ruleJson['rulePattern']) is list:
 			self.rulePattern = ruleJson['rulePattern']
 		else:
@@ -56,6 +56,9 @@ class Rule:
 				self.filterPattern = [re.compile(self.filters[key][1]) for key in self.filterField]
 			else:
 				self.filterPattern = [re.compile(self.filters[key][1],re.IGNORECASE) for key in self.filterField]
+
+			#lowercasing the column names to match the standard field headers
+			self.filterField = [key.lower() for key in self.filterField]
 
 		else:
 			self.filterField = []
@@ -129,10 +132,12 @@ class Rule:
 				self.log.append(f'[INFO] Rule "{self.rulePattern}" applied to "{self.ruleField}" ({dataJson[self.ruleField]}): NOT MATCHED')
 		else:
 			# If the rule field doesnt have a value, throw it away.
-			if dataJson[self.ruleField] is None or dataJson[self.ruleField] != dataJson[self.ruleField]:
-				### None space change made by akoltko 20200716
-				dataJson[self.ruleField] = ''
-
+			try:
+				if dataJson[self.ruleField] is None or dataJson[self.ruleField] != dataJson[self.ruleField]:
+					### None space change made by akoltko 20200716
+					dataJson[self.ruleField] = ''
+			except:
+				assert False, dataJson
 			matches = self.rulePattern.search(str(dataJson[self.ruleField]))
 
 			if matches:

@@ -170,7 +170,6 @@ class Mapper(cmd.Cmd):
 
 		self.handler.review_types(generalType)
 
-		
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
 			usage: match """
@@ -204,8 +203,10 @@ class Mapper(cmd.Cmd):
 		# TODO: see if anyone can figure out how to move this to backend
 		for asset in self.handler.apply_matches():
 			match_type = asset.match.match_type
+			print("\n")
+			print(f"ASSET NAME: {asset.full_asset_name}")
+			print(f"ASSET TYPE: {asset.general_type}")
 			if match_type in question_types:
-				print(f"ASSET NAME: {asset.full_asset_name}")
 				asset.match.print_comparison()
 				action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
 				if action == 'apply':
