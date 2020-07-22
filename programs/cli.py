@@ -170,7 +170,6 @@ class Mapper(cmd.Cmd):
 
 		self.handler.review_types(generalType)
 
-
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
 			usage: match """
