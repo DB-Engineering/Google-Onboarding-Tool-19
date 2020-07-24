@@ -292,13 +292,13 @@ class Loadsheet:
 			if non_null_fields is None:
 				non_null_fields	= [
 						'building',
-						'generalType',
-						'assetName',
-						'fullAssetPath',
-						'standardFieldName',
-						'deviceId',
-						'objectType',
-						'objectId',
+						'generaltype',
+						'assetname',
+						'fullassetpath',
+						'standardfieldname',
+						'deviceid',
+						'objecttype',
+						'objectid',
 						'units'
 						]
 
@@ -356,7 +356,7 @@ class Loadsheet:
 		'''
 		finds and returns a list of duplicate FullAssetPath-StandardFieldName pairs
 		'''
-		data['uid'] = data['fullAssetPath'] + ' ' + data['standardFieldName']
+		data['uid'] = data['fullassetpath'] + ' ' + data['standardfieldname']
 		df = data[data['required'] == 'YES']
 		counts = df['uid'].value_counts()
 		df_counts = pd.DataFrame({'uid':counts.index, 'amt':counts.values})
