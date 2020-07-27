@@ -236,18 +236,18 @@ class Field:
 			assert 'bms_type' in self.bms_info, "Argument 'bms_info' requires a 'bms_type' key."
 
 			if bms_info['bms_type'] == 'ALC':
-				required_fields = ['location','controlProgram','name','type','path']
+				required_fields = ['location','controlprogram','name','type','path']
 				for field in required_fields:
 					assert field in self.bms_info, "Field '{}' not in 'bms_info' argument.".format(field)
 
 			self.bacnet_address = bacnet_address
 
-			bacnet_requirements = ['deviceId','objectType','objectId','objectName','units']
+			bacnet_requirements = ['deviceid','objecttype','objectid','objectname','units']
 			for field in bacnet_requirements:
 				assert field in bacnet_requirements, "Field '{}' not in 'bacnet_address' argument.".format(field)
 
 		else:
-			self.bms_info={'bms_type':"",'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
+			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
 			self.bacnet_address={'deviceId':'', 'objectId':'', 'objectName':'Placeholder', 'objectType':'', 'units':''}
 
 	def get_field_details(self):
