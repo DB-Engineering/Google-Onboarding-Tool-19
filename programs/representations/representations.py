@@ -248,7 +248,7 @@ class Field:
 
 		else:
 			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
-			self.bacnet_address={'deviceId':'', 'objectId':'', 'objectName':'Placeholder', 'objectType':'', 'units':''}
+			self.bacnet_address={'deviceid':'', 'objectid':'', 'objectname':'Placeholder', 'objecttype':'', 'units':''}
 
 	def get_field_details(self):
 		"""
@@ -529,7 +529,9 @@ class Assets:
 				unique_types[field_code]['assets'].append(asset)
 
 		return unique_types
-
+'''
+	#functionality not complete
+	#removed 20200727 akoltko
 	def dump_to_steve_format(self):
 		"""
 		Dump the data content to the Steve format.
@@ -565,7 +567,7 @@ class Assets:
 
 			s = '\t'
 			print(s.join(out_row.values()))
-
+'''
 	def validate_without_errors(self, ontology):
 		"""
 		Validate the subfields and fields against the ontology.
