@@ -1,3 +1,4 @@
+fload_from
 import json
 import base64
 
@@ -411,33 +412,33 @@ class Assets:
 			- data_row: row of data to add
 		"""
 
-		if data_row['fullAssetPath'] not in self.assets:
+		if data_row['fullassetpath'] not in self.assets:
 			self.add_asset(
 						data_row['building'],
-						data_row['generalType'],
-						data_row['typeName'],
-						data_row['assetName'],
-						data_row['fullAssetPath']
+						data_row['generaltype'],
+						data_row['typename'],
+						data_row['assetname'],
+						data_row['fullassetpath']
 					)
 
 		bms_info = {
 				'bms_type':'ALC',
 				'location':data_row['location'],
-				'controlProgram':data_row['controlProgram'],
+				'controlProgram':data_row['controlprogram'],
 				'name':data_row['name'],
 				'type':data_row['type'],
 				'path':data_row['path']
 			}
 
 		bacnet_address = {
-				'deviceId':data_row['deviceId'],
-				'objectId':data_row['objectId'],
-				'objectType':data_row['objectType'],
-				'objectName':data_row['objectName'],
+				'deviceId':data_row['deviceid'],
+				'objectId':data_row['objectid'],
+				'objectType':data_row['objecttype'],
+				'objectName':data_row['objectname'],
 				'units':data_row['units']
 			}
 
-		self.add_field(data_row['fullAssetPath'],data_row['standardFieldName'],bms_info,bacnet_address,data_row['manuallyMapped'])
+		self.add_field(data_row['fullassetpath'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'])
 
 	def load_from_data(self,data):
 		"""
@@ -470,36 +471,36 @@ class Assets:
 				generalType = data[asset]['general_type']
 				typeName = data[asset]['type_name']
 				standardFieldName = field
-				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceId']
-				objectId = data[asset]['fields'][field]['bacnet_address']['objectId']
-				objectName = data[asset]['fields'][field]['bacnet_address']['objectName']
-				objectType = data[asset]['fields'][field]['bacnet_address']['objectType']
+				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
+				objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
+				objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
+				objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
 				units = data[asset]['fields'][field]['bacnet_address']['units']
 				location = data[asset]['fields'][field]['bms_info']['location']
-				controlProgram = data[asset]['fields'][field]['bms_info']['controlProgram']
+				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
 				manually_mapped = data[asset]['fields'][field]['manually_mapped']
 				name = data[asset]['fields'][field]['bms_info']['name']
 				path = data[asset]['fields'][field]['bms_info']['path']
 				ttype = data[asset]['fields'][field]['bms_info']['type']
 				row = {
 					'location':location,
-					'controlProgram':controlProgram,
+					'controlprogram':controlProgram,
 					'name':name,
 					'type':ttype,
 					'path':path,
-					'deviceId':deviceId,
-					'objectType':objectType,
-					'objectId':objectId,
-					'objectName':objectName,
+					'deviceid':deviceId,
+					'objecttype':objectType,
+					'objectid':objectId,
+					'objectname':objectName,
 					'units':units,
 					'required':'YES',
-					'manuallyMapped':manually_mapped,
+					'manuallymapped':manually_mapped,
 					'building':building,
-					'generalType':generalType,
-					'typeName':typeName,
-					'assetName':assetName,
-					'fullAssetPath':fullAssetPath,
-					'standardFieldName':standardFieldName
+					'generaltype':generalType,
+					'typename':typeName,
+					'assetname':assetName,
+					'fullassetpath':fullAssetPath,
+					'standardfieldname':standardFieldName
 				}
 				out_data.append(row)
 		if len(self.ununsed_data)>0:
