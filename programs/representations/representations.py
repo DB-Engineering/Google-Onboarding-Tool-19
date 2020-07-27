@@ -424,17 +424,17 @@ class Assets:
 		bms_info = {
 				'bms_type':'ALC',
 				'location':data_row['location'],
-				'controlProgram':data_row['controlprogram'],
+				'controlprogram':data_row['controlprogram'],
 				'name':data_row['name'],
 				'type':data_row['type'],
 				'path':data_row['path']
 			}
 
 		bacnet_address = {
-				'deviceId':data_row['deviceid'],
-				'objectId':data_row['objectid'],
-				'objectType':data_row['objecttype'],
-				'objectName':data_row['objectname'],
+				'deviceid':data_row['deviceid'],
+				'objectid':data_row['objectid'],
+				'objecttype':data_row['objecttype'],
+				'objectname':data_row['objectname'],
 				'units':data_row['units']
 			}
 
