@@ -77,7 +77,6 @@ class Mapper(cmd.Cmd):
 
 		# Check that the right number of arguments are supplied.
 		inputs = self._parse_args(args)
-		for arg in inputs: print(arg)
 
 		if len(inputs) != 2:
 			print("[ERROR]\tNot the correct number of arguments. See help for details on import function.")
@@ -202,6 +201,7 @@ class Mapper(cmd.Cmd):
 			question_types.append("EXACT")
 		# TODO: see if anyone can figure out how to move this to backend
 		for asset in self.handler.apply_matches():
+			self._clear()
 			match_type = asset.match.match_type
 			print("\n")
 			print(f"ASSET NAME: {asset.full_asset_name}")
