@@ -1,4 +1,3 @@
-fload_from
 import json
 import base64
 
@@ -529,45 +528,7 @@ class Assets:
 				unique_types[field_code]['assets'].append(asset)
 
 		return unique_types
-'''
-	#functionality not complete
-	#removed 20200727 akoltko
-	def dump_to_steve_format(self):
-		"""
-		Dump the data content to the Steve format.
 
-		args:
-			-
-
-		"""
-		# TODO: Add functionality for this to CLI and Handler
-		# Output for STEVE format.
-		steve_headers = (
-				'location','controlProgram','name','type','objectType','deviceId','objectName','units','path',
-				'required','bacnetAvailable','building','generalType','assetName','fullAssetPath','standardFieldName'
-			)
-
-		data = self.dump_to_data()
-
-		s = '\t'
-		print(s.join(steve_headers))
-		for row in data:
-			out_row = {}
-			for i in steve_headers:
-				if i in row:
-					if i == 'objectType':
-						out_row['objectType'] = row['objectType'] +':'+str(row['objectId'])
-					elif i == 'deviceId':
-						out_row['deviceId'] = 'DEV:' + str(row['deviceId'])
-					else:
-						out_row[i] = row[i]
-				else:
-					out_row[i] = ''
-
-
-			s = '\t'
-			print(s.join(out_row.values()))
-'''
 	def validate_without_errors(self, ontology):
 		"""
 		Validate the subfields and fields against the ontology.
@@ -621,7 +582,45 @@ class Assets:
 
 		print("[INFO]\tNo representation errors!")
 
+'''
+	#functionality not complete
+	#removed 20200727 akoltko
+	def dump_to_steve_format(self):
+		"""
+		Dump the data content to the Steve format.
 
+		args:
+			-
+
+		"""
+		# TODO: Add functionality for this to CLI and Handler
+		# Output for STEVE format.
+		steve_headers = (
+				'location','controlProgram','name','type','objectType','deviceId','objectName','units','path',
+				'required','bacnetAvailable','building','generalType','assetName','fullAssetPath','standardFieldName'
+			)
+
+		data = self.dump_to_data()
+
+		s = '\t'
+		print(s.join(steve_headers))
+		for row in data:
+			out_row = {}
+			for i in steve_headers:
+				if i in row:
+					if i == 'objectType':
+						out_row['objectType'] = row['objectType'] +':'+str(row['objectId'])
+					elif i == 'deviceId':
+						out_row['deviceId'] = 'DEV:' + str(row['deviceId'])
+					else:
+						out_row[i] = row[i]
+				else:
+					out_row[i] = ''
+
+
+			s = '\t'
+			print(s.join(out_row.values()))
+'''
 
 
 
