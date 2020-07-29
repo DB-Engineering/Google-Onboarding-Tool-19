@@ -1,3 +1,20 @@
+#Copyright 2020 DB Engineering
+
+#This file is part of OnboardingTool
+
+#OnboardingTool is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#Foobar is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with OnboardingTool.  If not, see https://www.gnu.org/licenses/.
+
 import cmd
 import handler
 import os
@@ -33,6 +50,10 @@ class Mapper(cmd.Cmd):
 		intro_text += """Welcome to the Loadsheet Builder. \n"""
 		intro_text += """Use this tool to build and review loadsheets. \n"""
 		intro_text += """For help with functions, type 'help' or view README. \n"""
+		intro_text += """OnboardingTool Copyright (C) 2020 DB Engineering"""
+		intro_text += """This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'."""
+		intro_text += """This is free software, and you are welcome to redistribute it"""
+		intro_text += """under certain conditions; type `show c' for details."""
 		intro_text += """============================================"""
 		self.intro = f.renderText('LoadBoy2000')+intro_text
 
@@ -57,6 +78,29 @@ class Mapper(cmd.Cmd):
 	def _clear(self):
 		""" Clear the current console."""
 		os.system('cls' if os.name == 'nt' else 'clear')
+
+	def do_show(self, args):
+		"""			Show GPL Warranty information or Copying information
+		    usage: show <w|c> """
+
+		inputs = self._parse_args(args)
+
+		if len(inputs) != 1:
+			return false
+
+		if inputs[0] = 'w':
+			show_w = "This program is distributed in the hope that it will be useful,"
+			show_w += "but WITHOUT ANY WARRANTY; without even the implied warranty of"
+			show_w += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+			show_w += "GNU General Public License for more details."
+			print(show_w)
+
+		if inputs[0] = 'c':
+			show_c = "This program is free software: you can redistribute it and/or modify"
+			show_c += "it under the terms of the GNU General Public License as published by"
+			show_c += "the Free Software Foundation, either version 3 of the License, or"
+			show_c += "(at your option) any later version."
+			print(show_c)
 
 	"""Both quit and exit quit the application"""
 	def do_quit(self,args):
