@@ -1,19 +1,16 @@
 #Copyright 2020 DB Engineering
 
-#This file is part of OnboardingTool
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
 
-#OnboardingTool is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
+#    http://www.apache.org/licenses/LICENSE-2.0
 
-#Foobar is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-
-#You should have received a copy of the GNU General Public License
-#along with OnboardingTool.  If not, see https://www.gnu.org/licenses/.
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
 
 import cmd
 import handler
@@ -51,9 +48,7 @@ class Mapper(cmd.Cmd):
 		intro_text += """Use this tool to build and review loadsheets. \n"""
 		intro_text += """For help with functions, type 'help' or view README. \n"""
 		intro_text += """OnboardingTool Copyright (C) 2020 DB Engineering"""
-		intro_text += """This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'."""
-		intro_text += """This is free software, and you are welcome to redistribute it"""
-		intro_text += """under certain conditions; type `show c' for details."""
+		intro_text += """To view license information, type 'license'\n"""
 		intro_text += """============================================"""
 		self.intro = f.renderText('LoadBoy2000')+intro_text
 
@@ -79,28 +74,23 @@ class Mapper(cmd.Cmd):
 		""" Clear the current console."""
 		os.system('cls' if os.name == 'nt' else 'clear')
 
-	def do_show(self, args):
-		"""			Show GPL Warranty information or Copying information
-		    usage: show <w|c> """
+	def do_license(self, args):
+		"""			Show Apache License
+		    usage: license """
 
-		inputs = self._parse_args(args)
+		l = "Copyright 2020 DB Engineering\n\n"
+		l += 'Licensed under the Apache License, Version 2.0 (the "License");\n'
+		l += "you may not use this file except in compliance with the License\n"
+		l += "You may obtain a copy of the License at\n"
+		l += "    http://www.apache.org/licenses/LICENSE-2.0\n"
+		l += "Unless required by applicable law or agreed to in writing, software\n"
+		l += 'distributed under the License is distributed on an "AS IS" BASIS,\n'
+		l += "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+		l += "See the License for the specific language governing permissions and\n"
+		l += "limitations under the License.\n"
 
-		if len(inputs) != 1:
-			return false
+		print(l)
 
-		if inputs[0] = 'w':
-			show_w = "This program is distributed in the hope that it will be useful,"
-			show_w += "but WITHOUT ANY WARRANTY; without even the implied warranty of"
-			show_w += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
-			show_w += "GNU General Public License for more details."
-			print(show_w)
-
-		if inputs[0] = 'c':
-			show_c = "This program is free software: you can redistribute it and/or modify"
-			show_c += "it under the terms of the GNU General Public License as published by"
-			show_c += "the Free Software Foundation, either version 3 of the License, or"
-			show_c += "(at your option) any later version."
-			print(show_c)
 
 	"""Both quit and exit quit the application"""
 	def do_quit(self,args):
