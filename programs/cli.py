@@ -1,3 +1,17 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 import cmd
 import handler
 import os
@@ -33,6 +47,8 @@ class Mapper(cmd.Cmd):
 		intro_text += """Welcome to the Loadsheet Builder. \n"""
 		intro_text += """Use this tool to build and review loadsheets. \n"""
 		intro_text += """For help with functions, type 'help' or view README. \n"""
+		intro_text += """OnboardingTool Copyright (C) 2020 DB Engineering"""
+		intro_text += """To view license information, type 'license'\n"""
 		intro_text += """============================================"""
 		self.intro = f.renderText('LoadBoy2000')+intro_text
 
@@ -57,6 +73,24 @@ class Mapper(cmd.Cmd):
 	def _clear(self):
 		""" Clear the current console."""
 		os.system('cls' if os.name == 'nt' else 'clear')
+
+	def do_license(self, args):
+		"""			Show Apache License
+		    usage: license """
+
+		l = "Copyright 2020 DB Engineering\n\n"
+		l += 'Licensed under the Apache License, Version 2.0 (the "License");\n'
+		l += "you may not use this file except in compliance with the License\n"
+		l += "You may obtain a copy of the License at\n"
+		l += "    http://www.apache.org/licenses/LICENSE-2.0\n"
+		l += "Unless required by applicable law or agreed to in writing, software\n"
+		l += 'distributed under the License is distributed on an "AS IS" BASIS,\n'
+		l += "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+		l += "See the License for the specific language governing permissions and\n"
+		l += "limitations under the License.\n"
+
+		print(l)
+
 
 	"""Both quit and exit quit the application"""
 	def do_quit(self,args):

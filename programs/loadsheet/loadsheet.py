@@ -1,3 +1,17 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 __version__ = '0.0.3'
 __author__ = 'Trevor S., Shane S., Andrew K.'
 
@@ -208,6 +222,10 @@ class Loadsheet:
 			output_filepath - location and name of excel file output
 		"""
 		df = pd.DataFrame.from_records(self._data)
+		print(self._std_header_map)
+		print(df.columns)
+		df.columns = [self._std_header_map[c] for c in df.columns]
+		print(output_filepath)
 		df.to_excel(output_filepath, index=False)
 
 	def validate(
@@ -381,12 +399,20 @@ class Loadsheet:
 			r = Rules(rule_file)
 
 			for row in self._data:
+				#add output headers
+				for output_header in _REQ_OUTPUT_HEADERS:
+					if output_header not in row.keys():
+						row[output_header] = ""
+						self._std_header_map[output_header] = output_header
 
+				#add manuallyMapped
+				if 'manuallyapped'not in row.keys():
+					row['manuallymapped'] = ''
+					self._std_header_map['manuallymapped'] = "manuallymapped"
 
-
-				if 'manuallyMapped'not in row.keys():
-					row['manuallyMapped'] = ''
-				if row['manuallyMapped'] == 'YES':
+				#skip manuallyMapped rows
+				if row['manuallymapped'] == 'YES':
 					continue
+				#apply rules
 				else:
 					r.ApplyRules(row)

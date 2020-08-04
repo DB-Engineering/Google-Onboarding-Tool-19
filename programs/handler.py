@@ -1,3 +1,17 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 import os
 import representations.representations
 import ontology.ontology
@@ -70,7 +84,6 @@ class Handler:
 		self.last_loadsheet_path = ''
 		self.last_rule_path = ''
 
-# TODO: ask about build_ontology, import_loadsheet, validate_loadsheet, import_bms_data, apply_rules, import_excel redundancy
 	def build_ontology(self, ontology_root):
 		"""
 		Try to build the ontology. If theres an error, print it out but don't blow up.
@@ -175,15 +188,15 @@ class Handler:
 	def apply_rules(self,rules_path):     ####### REWRITE ME
 		""" Run a given rules file over the loadsheet data. """
 
-		#try:
-		assert self.loadsheet_built, "Loadsheet is not initialized."
-		assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
-		print(f"[INFO]\tApplying rules from '{rules_path}'")
-		self.ls.apply_rules(rules_path)
-		print("[INFO]\tRules applied.")
+		try:
+			assert self.loadsheet_built, "Loadsheet is not initialized."
+			assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
+			print(f"[INFO]\tApplying rules from '{rules_path}'")
+			self.ls.apply_rules(rules_path)
+			print("[INFO]\tRules applied.")
 
-		#except Exception as e:
-		#	print(f"[ERROR]\tRules could not be applied: {e}.")
+		except Exception as e:
+			print(f"[ERROR]\tRules could not be applied: {e}.")
 
 	def export_loadsheet(self,excel_path):
 		"""
@@ -209,22 +222,22 @@ class Handler:
 
 	def import_excel(self,excel_path):
 		""" Import from an Excel file. """
-		#try:
+		try:
 			# Check that the loadsheet object is built.
-		if not self.loadsheet_built:
-			self.ls = loadsheet.loadsheet.Loadsheet()
-			self.loadsheet_built = True
+			if not self.loadsheet_built:
+				self.ls = loadsheet.loadsheet.Loadsheet()
+				self.loadsheet_built = True
 
-		if excel_path is None and self.last_loadsheet_path != '':
-			excel_path = self.last_loadsheet_path
-		assert os.path.exists(excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
-		self.last_loadsheet_path = excel_path
+			if excel_path is None and self.last_loadsheet_path != '':
+				excel_path = self.last_loadsheet_path
+			assert os.path.exists(excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
+			self.last_loadsheet_path = excel_path
 
-		print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
-		self.ls.from_loadsheet(excel_path)
+			print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
+			self.ls.from_loadsheet(excel_path)
 
-		#except Exception as e:
-		#	print('[ERROR]\tExcel file not imported: {}'.format(e))
+		except Exception as e:
+			print('[ERROR]\tExcel file not imported: {}'.format(e))
 
 	def review_types(self,general_type=None):
 		"""
@@ -327,7 +340,7 @@ class Handler:
 		returns each asset, one at a time
 
 		args: N/A
-		returns: N/A
+		returns: Asset iterable
 		"""
 		for asset_path in self.reps.assets:
 			yield self.reps.assets[asset_path]
