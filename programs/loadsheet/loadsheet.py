@@ -222,6 +222,10 @@ class Loadsheet:
 			output_filepath - location and name of excel file output
 		"""
 		df = pd.DataFrame.from_records(self._data)
+		print(self._std_header_map)
+		print(df.columns)
+		df.columns = [self._std_header_map[c] for c in df.columns]
+		print(output_filepath)
 		df.to_excel(output_filepath, index=False)
 
 	def validate(
@@ -395,12 +399,20 @@ class Loadsheet:
 			r = Rules(rule_file)
 
 			for row in self._data:
+				#add output headers
+				for output_header in _REQ_OUTPUT_HEADERS:
+					if output_header not in row.keys():
+						row[output_header] = ""
+						self._std_header_map[output_header] = output_header
 
+				#add manuallyMapped
+				if 'manuallyapped'not in row.keys():
+					row['manuallymapped'] = ''
+					self._std_header_map['manuallymapped'] = "manuallymapped"
 
-
-				if 'manuallyMapped'not in row.keys():
-					row['manuallyMapped'] = ''
-				if row['manuallyMapped'] == 'YES':
+				#skip manuallyMapped rows
+				if row['manuallymapped'] == 'YES':
 					continue
+				#apply rules
 				else:
 					r.ApplyRules(row)
