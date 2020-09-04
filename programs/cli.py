@@ -128,13 +128,13 @@ class Mapper(cmd.Cmd):
 
 		if import_type == 'bms':
 			print("[INFO]\tImporting from BMS file...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_loadsheet(path, has_normalized_fields=False)
 
-		if import_type == 'loadsheet':
+		elif import_type == 'loadsheet':
 			print("[INFO]\tImporting from loadsheet...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_loadsheet(path, has_normalized_fields=True)
 
-		if import_type == 'ontology':
+		elif import_type == 'ontology':
 			print("[INFO]\tImporting ontology...")
 			self.handler.build_ontology(path)
 

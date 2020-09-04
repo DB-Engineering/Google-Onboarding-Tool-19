@@ -72,6 +72,7 @@ class Asset:
 		self.full_asset_name = full_asset_name
 		self.fields = {}
 		self.matched = False
+		self.placeholderid = 10000
 
 	def add_field(self,field_name,bms_info,bacnet_address,manually_mapped=False,placeholder=False):
 		"""
@@ -89,7 +90,13 @@ class Asset:
 		returns: N/A
 		"""
 		assert field_name not in self.fields, "Field {} already set.".format(field_name)
-		self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder)
+		if placeholder:
+			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
+			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'Placeholder', 'objecttype':'Placeholder', 'units':''}
+			self.placeholderid += 1
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder = true)
+		else:
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
 
 	def update_field(self,field_name,bms_info,bacnet_address,manually_mapped=False):
 		"""
@@ -260,8 +267,8 @@ class Field:
 				assert field in bacnet_requirements, "Field '{}' not in 'bacnet_address' argument.".format(field)
 
 		else:
-			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
-			self.bacnet_address={'deviceid':'', 'objectid':'', 'objectname':'Placeholder', 'objecttype':'', 'units':''}
+			self.bms_info = bms_info
+			self.bacnet_address = bacnet_address
 
 	def get_field_details(self):
 		"""

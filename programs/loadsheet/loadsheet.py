@@ -105,12 +105,13 @@ class Loadsheet:
 			self,
 			data: List[Dict[str,Any]],
 			std_header_map: Dict[str,str],
-			is_loadsheet: bool= False,
+			has_normalized_fields: bool= False,
 			):
-		assert Loadsheet._is_valid_headers(data[0].keys(), is_loadsheet) == True,\
+
+		assert Loadsheet._is_valid_headers(data[0].keys(), has_normalized_fields) == True,\
 				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
 				headers:\n {}".format(', '.join(data[0].keys()),', '.join(
-					*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if is_loadsheet
+					*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
 					else _REQ_INPUT_HEADERS]))
 		self._data = data
 		self._std_header_map = std_header_map
@@ -119,21 +120,31 @@ class Loadsheet:
 	def from_loadsheet(
 			cls,
 			filepath: str
+			has_normalized_fields: bool
 			):
 		"""
 		Initializes loadsheet object from existing loadsheet Excel file
 		args:
 			filepath - absolute filepath to loadsheet excel file
-			ini_config_filepath - not currently enabled, do not use
+			has_normalized_fields - flag if has normalized fields
 		returns:
 			loadsheet object
 		"""
-		# hardcode header rows as [0,1] for initial release
-		df = pd.read_excel(filepath, header= 0)
+		# hardcode header rows as [0] for initial release
+		valid_file_types = {
+			'.xlsx':'excel',
+			'.csv':'bms_file'
+		}
+		file_type = os.path.splitext(loadsheet_path)[1]
+
+		if file_type = '.xlsx':
+			df = pd.read_excel(filepath, header= 0)
+		elif file_type = '.csv':
+			df = pd.read_csv(filepath, header= 0)
 		std_header_map = Loadsheet._to_std_header_mapping(
 				df.columns)
 		df.columns = std_header_map.keys()
-		return cls(df.to_dict('records'), std_header_map, True)
+		return cls(df.to_dict('records'), std_header_map, has_normalized_fields)
 
 	@classmethod
 	def from_bms(
@@ -172,13 +183,13 @@ class Loadsheet:
 		return [sh.translate(trans_table).lower() for sh in headers]
 
 	@staticmethod
-	def _is_valid_headers(headers: List[str], is_loadsheet: bool) -> bool:
+	def _is_valid_headers(headers: List[str], has_normalized_fields: bool) -> bool:
 		'''
 		Checks column names from loadsheet or BMS file are valid as
 		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
 		'''
 		trans_headers = Loadsheet._to_std_headers(headers)
-		if is_loadsheet:
+		if has_normalized_fields:
 			return set(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS).\
 					   issubset(set(trans_headers))
 		else:
@@ -222,10 +233,7 @@ class Loadsheet:
 			output_filepath - location and name of excel file output
 		"""
 		df = pd.DataFrame.from_records(self._data)
-		print(self._std_header_map)
-		print(df.columns)
 		df.columns = [self._std_header_map[c] for c in df.columns]
-		print(output_filepath)
 		df.to_excel(output_filepath, index=False)
 
 	def validate(
@@ -342,7 +350,6 @@ class Loadsheet:
 				for uid in repeat_uid:
 					print(f"\t\t{uid}")
 
-
 	@staticmethod
 	def _ensure_required_correct(
 			data: pd.DataFrame
@@ -406,7 +413,7 @@ class Loadsheet:
 						self._std_header_map[output_header] = output_header
 
 				#add manuallyMapped
-				if 'manuallyapped'not in row.keys():
+				if 'manuallymapped'not in row.keys():
 					row['manuallymapped'] = ''
 					self._std_header_map['manuallymapped'] = "manuallymapped"
 
