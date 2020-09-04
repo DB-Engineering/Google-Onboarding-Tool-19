@@ -105,13 +105,15 @@ class Handler:
 			# Raise the exception to the user
 			print(f"[WARNING]\tOntology could not build: {e}")
 
-	def import_loadsheet(self, loadsheet_path):
+	def import_loadsheet(self, loadsheet_path, has_normalized_fields):
 		"""
 		Attempts to build loadsheet from given filepath
 		If errors occur, prints them but doesn't close program
 
 		args:
 			- loadsheet_path: path of loadsheet Excel or BMS file
+			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+			                         or loadsheet (normalized fields)
 
 		returns: N/A
 		"""
@@ -125,20 +127,15 @@ class Handler:
 				'.xlsx':'excel',
 				'.csv':'bms_file'
 			}
-			file_type = os.path.splitext(loadsheet_path)[1]
+			#file_type = os.path.splitext(loadsheet_path)[1]
 
 			assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
 			assert os.path.exists(loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
 			try:
 				# Import the data into the loadsheet object.
-				self.loadsheet_built = True
-				if valid_file_types[file_type] == 'bms_file':
-					self.ls = load.Loadsheet.from_bms(loadsheet_path)
-				elif valid_file_types[file_type] == 'excel':
-					self.ls = load.Loadsheet.from_loadsheet(loadsheet_path)
-
+				self.ls = load.Loadsheet.from_loadsheet(loadsheet_path, has_normalized_fields)
 				print("[INFO]\tLoadsheet Imported")
-
+				self.loadsheet_built = True
 			except Exception as e:
 				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 

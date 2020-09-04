@@ -28,6 +28,7 @@ content of the message. A rule consists of several basic components:
 import logging
 import csv, json, re, datetime, os
 import math
+import string
 
 
 class Rule:
@@ -49,7 +50,7 @@ class Rule:
 		self.caseSensitive = caseSensitive
 		self.ruleName = ruleJson['ruleName']
 		#print(self.ruleName)
-		self.ruleField = ruleJson['ruleField']
+		self.ruleField = self._to_std_header(ruleJson['ruleField'])
 		if type(ruleJson['rulePattern']) is list:
 			self.rulePattern = ruleJson['rulePattern']
 		else:
@@ -58,18 +59,26 @@ class Rule:
 			else:
 				self.rulePattern = re.compile(ruleJson.get('rulePattern',''),re.IGNORECASE)
 
-		self.outputs = ruleJson['outputs']
+		outs = {}
+		for k in ruleJson['outputs']:
+			outs[self._to_std_header(k)] = ruleJson['outputs'][k]
+
+		self.outputs = outs
 
 		if 'filters' in ruleJson:
 			self.filters = ruleJson['filters']
 			self.filterField = [key for key in self.filters]
 			self.filterType = [self.filters[key][0] for key in self.filterField]
+
 			for fT in self.filterType:
 				assert fT in ['exclude','include'], 'Not a valid filter!'
 			if self.caseSensitive:
 				self.filterPattern = [re.compile(self.filters[key][1]) for key in self.filterField]
 			else:
 				self.filterPattern = [re.compile(self.filters[key][1],re.IGNORECASE) for key in self.filterField]
+
+			#lowercasing the column names to match the standard field headers
+			self.filterField = [self._to_std_header(key) for key in self.filterField]
 
 		else:
 			self.filterField = []
@@ -78,6 +87,13 @@ class Rule:
 
 		# Create a log list for the application of the rule.
 		self.log = []
+
+	def _to_std_header(self, header):
+		delete_dict = {sp_char: '' for sp_char in string.punctuation}
+		delete_dict[' '] = '' # space char not in sp_char by default
+		trans_table = str.maketrans(delete_dict)
+
+		return header.translate(trans_table).lower()
 
 	def _ResetMsg(self):
 		""" Reset the logging messages. """
@@ -143,10 +159,12 @@ class Rule:
 				self.log.append(f'[INFO] Rule "{self.rulePattern}" applied to "{self.ruleField}" ({dataJson[self.ruleField]}): NOT MATCHED')
 		else:
 			# If the rule field doesnt have a value, throw it away.
-			if dataJson[self.ruleField] is None or dataJson[self.ruleField] != dataJson[self.ruleField]:
-				### None space change made by akoltko 20200716
-				dataJson[self.ruleField] = ''
-
+			try:
+				if dataJson[self.ruleField] is None or dataJson[self.ruleField] != dataJson[self.ruleField]:
+					### None space change made by akoltko 20200716
+					dataJson[self.ruleField] = ''
+			except:
+				assert False, dataJson
 			matches = self.rulePattern.search(str(dataJson[self.ruleField]))
 
 			if matches:
@@ -245,9 +263,10 @@ class Rules:
 		#self._ResetMsg()
 		for rule in self.ruleSet:
 			rule.Apply(dataJson)
-			self.msg.append('[INFO] Rule: {}'.format(rule.ruleName))
-			self.msg.append('[INFO] Data input: {}'.format(str(dataJson)))
-			self.msg += rule.log
+			#Logging temporarily removed, was filling memory. 20200804 akoltko
+			#self.msg.append('[INFO] Rule: {}'.format(rule.ruleName))
+			#self.msg.append('[INFO] Data input: {}'.format(str(dataJson)))
+			#self.msg += rule.log
 
 	#severities are INFO, WARN, or ERROR
 	#ERROR>WARN>INFO
