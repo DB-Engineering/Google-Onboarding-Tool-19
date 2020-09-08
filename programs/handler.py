@@ -127,7 +127,7 @@ class Handler:
 				'.xlsx':'excel',
 				'.csv':'bms_file'
 			}
-			#file_type = os.path.splitext(loadsheet_path)[1]
+			file_type = os.path.splitext(loadsheet_path)[1]
 
 			assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
 			assert os.path.exists(loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."

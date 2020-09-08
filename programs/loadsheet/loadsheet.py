@@ -119,7 +119,7 @@ class Loadsheet:
 	@classmethod
 	def from_loadsheet(
 			cls,
-			filepath: str
+			filepath: str,
 			has_normalized_fields: bool
 			):
 		"""
@@ -135,11 +135,11 @@ class Loadsheet:
 			'.xlsx':'excel',
 			'.csv':'bms_file'
 		}
-		file_type = os.path.splitext(loadsheet_path)[1]
+		file_type = os.path.splitext(filepath)[1]
 
-		if file_type = '.xlsx':
+		if file_type == '.xlsx':
 			df = pd.read_excel(filepath, header= 0)
-		elif file_type = '.csv':
+		elif file_type == '.csv':
 			df = pd.read_csv(filepath, header= 0)
 		std_header_map = Loadsheet._to_std_header_mapping(
 				df.columns)
