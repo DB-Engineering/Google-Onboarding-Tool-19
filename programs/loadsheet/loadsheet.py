@@ -29,7 +29,7 @@ from typing import Any
 import openpyxl
 import pandas as pd
 
-sys.path.append('../')
+sys.path.append('..\\')
 
 # Proprietary Packages
 from rules.rules import Rules
@@ -299,17 +299,11 @@ class Loadsheet:
 
 		#check for null field_details
 		null_fields = self._find_null_fields(df, non_null_fields)
-		assert len(null_fields) == 0, '\n'.join(
-					  ["There are rows with missing fields:"]+
-					  [f"\t\t{uid}" for uid in null_fields]
-					 )
+		assert len(null_fields) == 0, "There are rows with missing fields: {}".format(null_fields)
 
 		#check for duplicate fullAssetPath-standardFieldName combos
 		repeat_uid = self._get_duplicate_asset_fields(df)
-		assert len(repeat_uid) == 0, '\n'.join(
-					  ["There are duplicated asset-field combinations:"]+
-					  [f"\t\t{uid}" for uid in repeat_uid]
-					 )
+		assert len(repeat_uid) == 0, "There are duplicated asset-field combinations: {}".format(repeat_uid)
 
 	def validate_without_errors(
 				self,
@@ -338,7 +332,7 @@ class Loadsheet:
 			# convert self._data to pd.DataFrame (we will transistion to
 			# using only dataframes internally in a future update)
 			df = pd.DataFrame.from_records(self._data)
-
+			
 			#required is always in [YES, NO]
 			if not self._ensure_required_correct(df):
 				print("[ERROR]\tUnacceptable values in required column")
@@ -346,16 +340,16 @@ class Loadsheet:
 			#check for null field_details
 			null_fields = self._find_null_fields(df, non_null_fields)
 			if len(null_fields) > 0:
-				print(f"[ERROR]\tThere are rows with missing fields:")
-				for uid in null_fields:
-					print(f"\t\t{uid}")
+				print("[ERROR]\tThere are rows with missing fields:{}".format(str(null_fields)))
+				#for uid in null_fields:
+					#print(f"\t\t{uid}")
 
 			#check for duplicate fullAssetPath-standardFieldName combos
 			repeat_uid = self._get_duplicate_asset_fields(df)
 			if len(repeat_uid) > 0:
 				print(f"[ERROR]\tThere are duplicated asset-field combinations:")
-				for uid in repeat_uid:
-					print(f"\t\t{uid}")
+				# for uid in repeat_uid:
+				# 	print(f"\t\t{uid}")
 
 
 	@staticmethod
@@ -379,8 +373,8 @@ class Loadsheet:
 		needed_columns.extend(non_null_fields)
 		relevant_df = data[needed_columns]
 		relevant_df = relevant_df[relevant_df['required'] == 'YES']
-		null_data = relevant_df[relevant_df.isnull().any(axis=1)]
-		return null_data.index.tolist()
+		null_data = relevant_df.columns[relevant_df.isnull().any()].tolist()
+		return null_data
 
 	@staticmethod
 	def _get_duplicate_asset_fields(
