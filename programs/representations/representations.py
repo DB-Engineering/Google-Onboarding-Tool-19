@@ -16,7 +16,7 @@ import json
 import base64
 
 import sys
-sys.path.append('../')
+sys.path.append('..\\')
 
 import ontology.ontology
 from pretty import PrettyPrint
