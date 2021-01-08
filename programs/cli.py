@@ -111,7 +111,6 @@ class Mapper(cmd.Cmd):
 
 		# Check that the right number of arguments are supplied.
 		inputs = self._parse_args(args)
-		for arg in inputs: print(arg)
 
 		if len(inputs) != 2:
 			print("[ERROR]\tNot the correct number of arguments. See help for details on import function.")
@@ -129,13 +128,13 @@ class Mapper(cmd.Cmd):
 
 		if import_type == 'bms':
 			print("[INFO]\tImporting from BMS file...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_loadsheet(path, has_normalized_fields=False)
 
-		if import_type == 'loadsheet':
+		elif import_type == 'loadsheet':
 			print("[INFO]\tImporting from loadsheet...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_loadsheet(path, has_normalized_fields=True)
 
-		if import_type == 'ontology':
+		elif import_type == 'ontology':
 			print("[INFO]\tImporting ontology...")
 			self.handler.build_ontology(path)
 
@@ -204,7 +203,6 @@ class Mapper(cmd.Cmd):
 
 		self.handler.review_types(generalType)
 
-		
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
 			usage: match """
@@ -237,9 +235,12 @@ class Mapper(cmd.Cmd):
 			question_types.append("EXACT")
 		# TODO: see if anyone can figure out how to move this to backend
 		for asset in self.handler.apply_matches():
+			self._clear()
 			match_type = asset.match.match_type
+			print("\n")
+			print(f"ASSET NAME: {asset.full_asset_name}")
+			print(f"ASSET TYPE: {asset.general_type}")
 			if match_type in question_types:
-				print(f"ASSET NAME: {asset.full_asset_name}")
 				asset.match.print_comparison()
 				action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
 				if action == 'apply':
