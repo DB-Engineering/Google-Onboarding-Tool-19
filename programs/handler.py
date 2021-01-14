@@ -136,6 +136,7 @@ class Handler:
 				self.ls = load.Loadsheet.from_loadsheet(loadsheet_path, has_normalized_fields)
 				print("[INFO]\tLoadsheet Imported")
 				self.loadsheet_built = True
+
 			except Exception as e:
 				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
@@ -178,6 +179,7 @@ class Handler:
 				self.ls = load.Loadsheet.from_bms(bms_path)
 				print("[INFO]\tBMS Imported")
 				self.loadsheet_built = True
+
 			except Exception as e:
 				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 

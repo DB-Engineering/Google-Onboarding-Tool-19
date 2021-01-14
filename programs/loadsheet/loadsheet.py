@@ -41,7 +41,7 @@ from rules.rules import Rules
 _REQ_INPUT_HEADERS_BMS = [
 		'objectid',
 		'deviceid',
-		'objectname',
+		'objectname'
 		]
 
 # 01132021: general
@@ -107,6 +107,7 @@ class Loadsheet:
 			self,
 			data: List[Dict[str,Any]],
 			std_header_map: Dict[str,str],
+
 			#has_normalized_fields: bool= False,
 			):
 
@@ -119,7 +120,7 @@ class Loadsheet:
 		# 			*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
 		# 			else _REQ_INPUT_HEADERS]))
 		# # end by sypks
-
+    
 		self._data = data
 		self._std_header_map = std_header_map
 
@@ -143,6 +144,7 @@ class Loadsheet:
 			'.csv':'bms_file'
 		}
 		file_type = os.path.splitext(filepath)[1]
+
 
 		if file_type == '.xlsx':
 			df = pd.read_excel(filepath, header= 0)
@@ -231,6 +233,7 @@ class Loadsheet:
 		'''
 		trans_headers = Loadsheet._to_std_headers(headers)
 		if has_normalized_fields:
+
 			return set(required_input_headers+_REQ_OUTPUT_HEADERS) == \
 				set(required_input_headers+_REQ_OUTPUT_HEADERS).intersection(
 					set(trans_headers))
