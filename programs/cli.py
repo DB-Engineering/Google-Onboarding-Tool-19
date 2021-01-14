@@ -1,3 +1,17 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 import cmd
 import handler
 import os
@@ -33,6 +47,8 @@ class Mapper(cmd.Cmd):
 		intro_text += """Welcome to the Loadsheet Builder. \n"""
 		intro_text += """Use this tool to build and review loadsheets. \n"""
 		intro_text += """For help with functions, type 'help' or view README. \n"""
+		intro_text += """OnboardingTool Copyright (C) 2020 DB Engineering"""
+		intro_text += """To view license information, type 'license'\n"""
 		intro_text += """============================================"""
 		self.intro = f.renderText('LoadBoy2000')+intro_text
 
@@ -58,6 +74,24 @@ class Mapper(cmd.Cmd):
 		""" Clear the current console."""
 		os.system('cls' if os.name == 'nt' else 'clear')
 
+	def do_license(self, args):
+		"""			Show Apache License
+		    usage: license """
+
+		l = "Copyright 2020 DB Engineering\n\n"
+		l += 'Licensed under the Apache License, Version 2.0 (the "License");\n'
+		l += "you may not use this file except in compliance with the License\n"
+		l += "You may obtain a copy of the License at\n"
+		l += "    http://www.apache.org/licenses/LICENSE-2.0\n"
+		l += "Unless required by applicable law or agreed to in writing, software\n"
+		l += 'distributed under the License is distributed on an "AS IS" BASIS,\n'
+		l += "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+		l += "See the License for the specific language governing permissions and\n"
+		l += "limitations under the License.\n"
+
+		print(l)
+
+
 	"""Both quit and exit quit the application"""
 	def do_quit(self,args):
 		""" Quits LoadBoy """
@@ -77,7 +111,6 @@ class Mapper(cmd.Cmd):
 
 		# Check that the right number of arguments are supplied.
 		inputs = self._parse_args(args)
-		for arg in inputs: print(arg)
 
 		if len(inputs) != 2:
 			print("[ERROR]\tNot the correct number of arguments. See help for details on import function.")
@@ -93,15 +126,23 @@ class Mapper(cmd.Cmd):
 			print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
 			return
 
+		# 01132021: why was this using the from_loadsheet import method?
+		# if import_type == 'bms':
+		# 	print("[INFO]\tImporting from BMS file...")
+		# 	self.handler.import_loadsheet(path, has_normalized_fields=False)
+
+		# changed call here and created import_bms method in handler
+		# to address this error; not a permanent fix..
 		if import_type == 'bms':
 			print("[INFO]\tImporting from BMS file...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_bms(path, has_normalized_fields=False)
+		# end by sypks
 
-		if import_type == 'loadsheet':
+		elif import_type == 'loadsheet':
 			print("[INFO]\tImporting from loadsheet...")
-			self.handler.import_loadsheet(path)
+			self.handler.import_loadsheet(path, has_normalized_fields=True)
 
-		if import_type == 'ontology':
+		elif import_type == 'ontology':
 			print("[INFO]\tImporting ontology...")
 			self.handler.build_ontology(path)
 
@@ -150,7 +191,7 @@ class Mapper(cmd.Cmd):
 
 	def do_review(self, args):
 		"""			Review GeneralTypes and Matches. Loadsheet must be validated
-			usage: review <generalTypes/matches> <optional generalType> """
+			usage: review <optional generalType> """
 
 		if not self.handler.validated:
 			print("[ERROR]\tLoadsheet isn't validated yet. Run 'validate' first.")
@@ -159,25 +200,16 @@ class Mapper(cmd.Cmd):
 
 		inputs = args.split()
 
-		if len(inputs) not in [1,2]:
+		if len(inputs) > 1:
 			print("[ERROR]\tNot the correct number of arguments. See help for details on review function.")
 			return
 
-		review_type = inputs[0]
 		generalType = None
-		limit = 0
-		if len(inputs) > 1:
-			generalType = inputs[1]
-		if len(inputs) > 2:
-			limit = inputs[2]
+		if len(inputs) > 0:
+			generalType = inputs[0]
 
-		if review_type == 'matches':
-			self.handler.review_matches()
-		elif review_type == 'generalTypes':
-			self.handler.review_types(generalType)
-		else:
-			print(f"[ERROR]\t{review_type} is not a valid review method. See help for details on review function.")
-			return
+
+		self.handler.review_types(generalType)
 
 	def do_match(self, args):
 		"""			Match the types to their nearest types.
@@ -211,7 +243,11 @@ class Mapper(cmd.Cmd):
 			question_types.append("EXACT")
 		# TODO: see if anyone can figure out how to move this to backend
 		for asset in self.handler.apply_matches():
+			self._clear()
 			match_type = asset.match.match_type
+			print("\n")
+			print(f"ASSET NAME: {asset.full_asset_name}")
+			print(f"ASSET TYPE: {asset.general_type}")
 			if match_type in question_types:
 				asset.match.print_comparison()
 				action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()

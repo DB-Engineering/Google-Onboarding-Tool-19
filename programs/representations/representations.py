@@ -1,3 +1,17 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 import json
 import base64
 
@@ -49,8 +63,8 @@ class Asset:
 			- full_asset_name: BMS internal name
 
 		returns: new asset objects
-
 		"""
+
 		self.building = building
 		self.general_type = general_type
 		self.type_name = type_name
@@ -58,6 +72,7 @@ class Asset:
 		self.full_asset_name = full_asset_name
 		self.fields = {}
 		self.matched = False
+		self.placeholderid = 10000
 
 	def add_field(self,field_name,bms_info,bacnet_address,manually_mapped=False,placeholder=False):
 		"""
@@ -65,9 +80,9 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
-			- bacnet_address: dictionary describing deviceID, objectID,
+			- bacnet_address: dictionary describing deviceId, objectId,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
 			- placeholder: flag for placeholder field creation, default false
@@ -75,7 +90,13 @@ class Asset:
 		returns: N/A
 		"""
 		assert field_name not in self.fields, "Field {} already set.".format(field_name)
-		self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder)
+		if placeholder:
+			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
+			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'Placeholder', 'objecttype':'Placeholder', 'units':''}
+			self.placeholderid += 1
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder = true)
+		else:
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
 
 	def update_field(self,field_name,bms_info,bacnet_address,manually_mapped=False):
 		"""
@@ -83,7 +104,7 @@ class Asset:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -129,9 +150,9 @@ class Asset:
 
 	def get_fields(self):
 		"""
-		Get the names of the fields on the asset.
+		Get the field names on the asset.
 
-		returns: list of field objects
+		returns: list of field name strings
 		"""
 		return [field for field in self.fields]
 
@@ -144,6 +165,7 @@ class Asset:
 
 		returns: dictionary of BMS info of passed field
 		"""
+		assert field_name in self.fields, "Field not defined; cannot find."
 		return self.fields[field_name].get_field_details()
 
 	def get_all_field_details(self):
@@ -218,7 +240,7 @@ class Field:
 
 		args:
 			- field_name: string point name
-			- bms_info: dictionary, describing location, controlProgram,
+			- bms_info: dictionary, describing bms type, location, controlProgram,
 					    name, path, and type
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
@@ -234,19 +256,19 @@ class Field:
 			assert 'bms_type' in self.bms_info, "Argument 'bms_info' requires a 'bms_type' key."
 
 			if bms_info['bms_type'] == 'ALC':
-				required_fields = ['location','controlProgram','name','type','path']
+				required_fields = ['location','controlprogram','name','type','path']
 				for field in required_fields:
 					assert field in self.bms_info, "Field '{}' not in 'bms_info' argument.".format(field)
 
 			self.bacnet_address = bacnet_address
 
-			bacnet_requirements = ['deviceId','objectType','objectId','objectName','units']
+			bacnet_requirements = ['deviceid','objecttype','objectid','objectname','units']
 			for field in bacnet_requirements:
 				assert field in bacnet_requirements, "Field '{}' not in 'bacnet_address' argument.".format(field)
 
 		else:
-			self.bms_info={'location':'', 'controlProgram':'', 'name':'Placeholder', 'path':'', 'type':''}
-			self.bacnet_address={'deviceId':'', 'objectId':'', 'objectName':'Placeholder', 'objectType':'', 'units':''}
+			self.bms_info = bms_info
+			self.bacnet_address = bacnet_address
 
 	def get_field_details(self):
 		"""
@@ -267,6 +289,7 @@ class Assets:
 		""" Initialize the class. """
 		self.assets = {}
 		self.determined_types = {}
+		self.ununsed_data = []
 
 	def add_asset(self,building,general_type,type_name,asset_name,full_asset_name):
 		"""
@@ -290,6 +313,7 @@ class Assets:
 		args:
 			- full_asset_name: name of asset to remove
 		"""
+		assert full_asset_name in self.assets, "Asset {} does not exist.".format(full_asset_name)
 		del self.assets[full_asset_name]
 
 	def update_type(self,full_asset_name,type_name):
@@ -369,11 +393,10 @@ class Assets:
 
 		returns: list of all general types
 		"""
-		general_types = []
+		general_types = set()
 		for asset in self.assets:
 			gt = self.assets[asset].get_general_type()
-			if gt not in general_types:
-				general_types.append(gt)
+			general_types.add(gt)
 
 		return general_types
 
@@ -406,36 +429,36 @@ class Assets:
 		Load from a row of data.
 
 		args:
-			- data_row: row of data to adds
+			- data_row: row of data to add
 		"""
 
-		if data_row['fullAssetPath'] not in self.assets:
+		if data_row['fullassetpath'] not in self.assets:
 			self.add_asset(
 						data_row['building'],
-						data_row['generalType'],
-						data_row['typeName'],
-						data_row['assetName'],
-						data_row['fullAssetPath']
+						data_row['generaltype'],
+						data_row['typename'],
+						data_row['assetname'],
+						data_row['fullassetpath']
 					)
 
 		bms_info = {
 				'bms_type':'ALC',
 				'location':data_row['location'],
-				'controlProgram':data_row['controlProgram'],
+				'controlprogram':data_row['controlprogram'],
 				'name':data_row['name'],
 				'type':data_row['type'],
 				'path':data_row['path']
 			}
 
 		bacnet_address = {
-				'deviceId':data_row['deviceId'],
-				'objectId':data_row['objectId'],
-				'objectType':data_row['objectType'],
-				'objectName':data_row['objectName'],
+				'deviceid':data_row['deviceid'],
+				'objectid':data_row['objectid'],
+				'objecttype':data_row['objecttype'],
+				'objectname':data_row['objectname'],
 				'units':data_row['units']
 			}
 
-		self.add_field(data_row['fullAssetPath'],data_row['standardFieldName'],bms_info,bacnet_address,data_row['manuallyMapped'])
+		self.add_field(data_row['fullassetpath'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'])
 
 	def load_from_data(self,data):
 		"""
@@ -445,7 +468,6 @@ class Assets:
 			- data: dictionary of lists representing loadsheet data
 		"""
 
-		self.ununsed_data = []
 		for row in data:
 			if row['required'] == 'YES':
 				self.load_from_row(row)
@@ -469,36 +491,36 @@ class Assets:
 				generalType = data[asset]['general_type']
 				typeName = data[asset]['type_name']
 				standardFieldName = field
-				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceId']
-				objectId = data[asset]['fields'][field]['bacnet_address']['objectId']
-				objectName = data[asset]['fields'][field]['bacnet_address']['objectName']
-				objectType = data[asset]['fields'][field]['bacnet_address']['objectType']
+				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
+				objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
+				objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
+				objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
 				units = data[asset]['fields'][field]['bacnet_address']['units']
 				location = data[asset]['fields'][field]['bms_info']['location']
-				controlProgram = data[asset]['fields'][field]['bms_info']['controlProgram']
+				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
 				manually_mapped = data[asset]['fields'][field]['manually_mapped']
 				name = data[asset]['fields'][field]['bms_info']['name']
 				path = data[asset]['fields'][field]['bms_info']['path']
 				ttype = data[asset]['fields'][field]['bms_info']['type']
 				row = {
 					'location':location,
-					'controlProgram':controlProgram,
+					'controlprogram':controlProgram,
 					'name':name,
 					'type':ttype,
 					'path':path,
-					'deviceId':deviceId,
-					'objectType':objectType,
-					'objectId':objectId,
-					'objectName':objectName,
+					'deviceid':deviceId,
+					'objecttype':objectType,
+					'objectid':objectId,
+					'objectname':objectName,
 					'units':units,
 					'required':'YES',
-					'manuallyMapped':manually_mapped,
+					'manuallymapped':manually_mapped,
 					'building':building,
-					'generalType':generalType,
-					'typeName':typeName,
-					'assetName':assetName,
-					'fullAssetPath':fullAssetPath,
-					'standardFieldName':standardFieldName
+					'generaltype':generalType,
+					'typename':typeName,
+					'assetname':assetName,
+					'fullassetpath':fullAssetPath,
+					'standardfieldname':standardFieldName
 				}
 				out_data.append(row)
 		if len(self.ununsed_data)>0:
@@ -527,42 +549,6 @@ class Assets:
 				unique_types[field_code]['assets'].append(asset)
 
 		return unique_types
-
-	def dump_to_steve_format(self):
-		"""
-		Dump the data content to the Steve format.
-
-		args:
-			-
-
-		"""
-		# TODO: Add functionality for this to CLI and Handler
-		# Output for STEVE format.
-		steve_headers = (
-				'location','controlProgram','name','type','objectType','deviceId','objectName','units','path',
-				'required','bacnetAvailable','building','generalType','assetName','fullAssetPath','standardFieldName'
-			)
-
-		data = self.dump_to_data()
-
-		s = '\t'
-		print(s.join(steve_headers))
-		for row in data:
-			out_row = {}
-			for i in steve_headers:
-				if i in row:
-					if i == 'objectType':
-						out_row['objectType'] = row['objectType'] +':'+str(row['objectId'])
-					elif i == 'deviceId':
-						out_row['deviceId'] = 'DEV:' + str(row['deviceId'])
-					else:
-						out_row[i] = row[i]
-				else:
-					out_row[i] = ''
-
-
-			s = '\t'
-			print(s.join(out_row.values()))
 
 	def validate_without_errors(self, ontology):
 		"""
@@ -617,7 +603,45 @@ class Assets:
 
 		print("[INFO]\tNo representation errors!")
 
+'''
+	#functionality not complete
+	#removed 20200727 akoltko
+	def dump_to_steve_format(self):
+		"""
+		Dump the data content to the Steve format.
 
+		args:
+			-
+
+		"""
+		# TODO: Add functionality for this to CLI and Handler
+		# Output for STEVE format.
+		steve_headers = (
+				'location','controlProgram','name','type','objectType','deviceId','objectName','units','path',
+				'required','bacnetAvailable','building','generalType','assetName','fullAssetPath','standardFieldName'
+			)
+
+		data = self.dump_to_data()
+
+		s = '\t'
+		print(s.join(steve_headers))
+		for row in data:
+			out_row = {}
+			for i in steve_headers:
+				if i in row:
+					if i == 'objectType':
+						out_row['objectType'] = row['objectType'] +':'+str(row['objectId'])
+					elif i == 'deviceId':
+						out_row['deviceId'] = 'DEV:' + str(row['deviceId'])
+					else:
+						out_row[i] = row[i]
+				else:
+					out_row[i] = ''
+
+
+			s = '\t'
+			print(s.join(out_row.values()))
+'''
 
 
 

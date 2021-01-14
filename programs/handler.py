@@ -1,9 +1,66 @@
+#Copyright 2020 DB Engineering
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 import os
 import representations.representations
 import ontology.ontology
 import loadsheet.loadsheet as load
 from pretty import PrettyPrint
+import base64
 
+
+def _convert_to_base64(data):
+	"""
+	Convert a data object into a base64 message.
+	Used as a codeword to uniquely identify each asset type
+	"""
+
+	if isinstance(data,set):
+		data = list(data)
+		data.sort()
+		data = tuple(data)
+		data = str(data)
+
+	if isinstance(data,list):
+		data.sort()
+		data = tuple(data)
+		data = str(data)
+
+	if isinstance(data,tuple):
+		data = str(data)
+
+	encoded_bytes = base64.b64encode(data.encode("utf-8"))
+	encoded_str = str(encoded_bytes, "utf-8")
+
+	return encoded_str
+
+def _print_type(type, type_dict):
+	"""
+	prints out a type's assets and fields
+	"""
+	print(f"ASSET GENERAL TYPE: {type}")
+	print("--------------------------------------------------------------------------------")
+	for field_hash in type_dict.keys():
+		assets = type_dict[field_hash][0]
+		fields = type_dict[field_hash][1]
+		col_width = max(len(field) for field in fields) + 3
+
+		print(f"ASSETS: {assets}\n")
+		print("FIELDS")
+		print("="*col_width)
+		print("\n".join(fields))
+		print("\n\n")
 
 class Handler:
 	"""
@@ -27,7 +84,6 @@ class Handler:
 		self.last_loadsheet_path = ''
 		self.last_rule_path = ''
 
-# TODO: ask about build_ontology, import_loadsheet, validate_loadsheet, import_bms_data, apply_rules, import_excel redundancy
 	def build_ontology(self, ontology_root):
 		"""
 		Try to build the ontology. If theres an error, print it out but don't blow up.
@@ -49,13 +105,15 @@ class Handler:
 			# Raise the exception to the user
 			print(f"[WARNING]\tOntology could not build: {e}")
 
-	def import_loadsheet(self, loadsheet_path):
+	def import_loadsheet(self, loadsheet_path, has_normalized_fields):
 		"""
 		Attempts to build loadsheet from given filepath
 		If errors occur, prints them but doesn't close program
 
 		args:
 			- loadsheet_path: path of loadsheet Excel or BMS file
+			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+			                         or loadsheet (normalized fields)
 
 		returns: N/A
 		"""
@@ -75,19 +133,58 @@ class Handler:
 			assert os.path.exists(loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
 			try:
 				# Import the data into the loadsheet object.
-				self.loadsheet_built = True
-				if valid_file_types[file_type] == 'bms_file':
-					self.ls = load.Loadsheet.from_bms(loadsheet_path)
-				elif valid_file_types[file_type] == 'excel':
-					self.ls = load.Loadsheet.from_loadsheet(loadsheet_path)
-
+				self.ls = load.Loadsheet.from_loadsheet(loadsheet_path, has_normalized_fields)
 				print("[INFO]\tLoadsheet Imported")
-
+				self.loadsheet_built = True
 			except Exception as e:
 				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
 		except Exception as e:
 			print("[ERROR]\tCould not load: {}".format(e))
+
+	# 01132021: ad-hoc fix for bms import error; needs to be addressed 
+	#		later. Fix done to address demo issues Trevor had earlier
+	#		in the day. Currently do not have time to refactor =(. 
+	#		basically took the source code directly above and reused w/
+	#		minimal modification
+	def import_bms(self, bms_path, has_normalized_fields):
+		"""
+		Attempts to build loadsheet from given filepath
+		If errors occur, prints them but doesn't close program
+
+		args:
+			- loadsheet_path: path of loadsheet Excel or BMS file
+			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+			                         or loadsheet (normalized fields)
+
+		returns: N/A
+		"""
+		# Check that the ontology is built first.
+		#if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
+		#	print('[ERROR]\tOntology not built. Build it first.')
+		#	return
+
+		try:
+			valid_file_types = {
+				'.xlsx':'excel',
+				'.csv':'bms_file'
+			}
+			file_type = os.path.splitext(bms_path)[1]
+
+			assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
+			assert os.path.exists(bms_path), f"Loadsheet path '{bms_path}' is not valid."
+			try:
+				# Import the data into the loadsheet object.
+				self.ls = load.Loadsheet.from_bms(bms_path)
+				print("[INFO]\tBMS Imported")
+				self.loadsheet_built = True
+			except Exception as e:
+				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+
+		except Exception as e:
+			print("[ERROR]\tCould not load: {}".format(e))
+
+	# end by sypks
 
 	def validate_loadsheet(self):
 		""" Try to build the loadsheet. If theres an error, print it out but don't blow up. """
@@ -132,15 +229,15 @@ class Handler:
 	def apply_rules(self,rules_path):     ####### REWRITE ME
 		""" Run a given rules file over the loadsheet data. """
 
-		#try:
-		assert self.loadsheet_built, "Loadsheet is not initialized."
-		assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
-		print(f"[INFO]\tApplying rules from '{rules_path}'")
-		self.ls.apply_rules(rules_path)
-		print("[INFO]\tRules applied.")
+		try:
+			assert self.loadsheet_built, "Loadsheet is not initialized."
+			assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
+			print(f"[INFO]\tApplying rules from '{rules_path}'")
+			self.ls.apply_rules(rules_path)
+			print("[INFO]\tRules applied.")
 
-		#except Exception as e:
-		#	print(f"[ERROR]\tRules could not be applied: {e}.")
+		except Exception as e:
+			print(f"[ERROR]\tRules could not be applied: {e}.")
 
 	def export_loadsheet(self,excel_path):
 		"""
@@ -166,22 +263,22 @@ class Handler:
 
 	def import_excel(self,excel_path):
 		""" Import from an Excel file. """
-		#try:
+		try:
 			# Check that the loadsheet object is built.
-		if not self.loadsheet_built:
-			self.ls = loadsheet.loadsheet.Loadsheet()
-			self.loadsheet_built = True
+			if not self.loadsheet_built:
+				self.ls = loadsheet.loadsheet.Loadsheet()
+				self.loadsheet_built = True
 
-		if excel_path is None and self.last_loadsheet_path != '':
-			excel_path = self.last_loadsheet_path
-		assert os.path.exists(excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
-		self.last_loadsheet_path = excel_path
+			if excel_path is None and self.last_loadsheet_path != '':
+				excel_path = self.last_loadsheet_path
+			assert os.path.exists(excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
+			self.last_loadsheet_path = excel_path
 
-		print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
-		self.ls.from_loadsheet(excel_path)
+			print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
+			self.ls.from_loadsheet(excel_path)
 
-		#except Exception as e:
-		#	print('[ERROR]\tExcel file not imported: {}'.format(e))
+		except Exception as e:
+			print('[ERROR]\tExcel file not imported: {}'.format(e))
 
 	def review_types(self,general_type=None):
 		"""
@@ -197,23 +294,37 @@ class Handler:
 			print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
 			return
 
+		'''
+		types is a dictionary of dictionary of list pairs
+		each instance is of form
+		"general_type":{
+			"fields_hash":[[list_of asset paths],[list of type fields]],
+			"fields_hash":[[list_of asset paths],[list of type fields]]
+		}
+		'''
+
 		types = {}
 
 		for asset_path in self.reps.assets:
 			asset = self.reps.assets[asset_path]
-			if asset.general_type not in types.keys():
-				types[asset.general_type] = []
-			types[asset.general_type].append(asset.full_asset_name)
+			field_hash = _convert_to_base64(asset.get_fields())
+			gT = asset.general_type.lower()
+			if gT not in types.keys():
+				types[gT] = {}
+			if field_hash not in types[gT].keys():
+				types[gT][field_hash] = [[],asset.get_fields()]
+			types[gT][field_hash][0].append(asset.full_asset_name)
 
+		#now we print
 		if general_type is not None:
-			if general_type not in types.keys():
-				print(f"[ERROR]\t{general_type} is not in loadsheet. General types found are {[type for type in types]}")
+			if general_type.lower() not in types.keys():
+				print(f"[ERROR]\tGeneral Type {general_type} not present in loadsheet. Valid types are {[type for type in types.keys()]}")
 				return
-			print(f"[{general_type}]: {types[general_type]}")
+			relevant_assets = types[general_type.lower()]
+			_print_type(general_type, relevant_assets)
 		else:
-			for type in types:
-				print(f"[{type}]: {types[type]}")
-				print('---------------------------------------------------------------------------------------------------------------------------------------------------\n\n')
+			for type in types.keys():
+				_print_type(type, types[type])
 
 	def review_matches(self):
 		"""
@@ -270,7 +381,7 @@ class Handler:
 		returns each asset, one at a time
 
 		args: N/A
-		returns: N/A
+		returns: Asset iterable
 		"""
 		for asset_path in self.reps.assets:
 			yield self.reps.assets[asset_path]
