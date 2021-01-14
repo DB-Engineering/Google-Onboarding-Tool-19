@@ -136,11 +136,57 @@ class Handler:
 				self.ls = load.Loadsheet.from_loadsheet(loadsheet_path, has_normalized_fields)
 				print("[INFO]\tLoadsheet Imported")
 				self.loadsheet_built = True
+
 			except Exception as e:
 				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
 		except Exception as e:
 			print("[ERROR]\tCould not load: {}".format(e))
+
+	# 01132021: ad-hoc fix for bms import error; needs to be addressed 
+	#		later. Fix done to address demo issues Trevor had earlier
+	#		in the day. Currently do not have time to refactor =(. 
+	#		basically took the source code directly above and reused w/
+	#		minimal modification
+	def import_bms(self, bms_path, has_normalized_fields):
+		"""
+		Attempts to build loadsheet from given filepath
+		If errors occur, prints them but doesn't close program
+
+		args:
+			- loadsheet_path: path of loadsheet Excel or BMS file
+			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+			                         or loadsheet (normalized fields)
+
+		returns: N/A
+		"""
+		# Check that the ontology is built first.
+		#if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
+		#	print('[ERROR]\tOntology not built. Build it first.')
+		#	return
+
+		try:
+			valid_file_types = {
+				'.xlsx':'excel',
+				'.csv':'bms_file'
+			}
+			file_type = os.path.splitext(bms_path)[1]
+
+			assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
+			assert os.path.exists(bms_path), f"Loadsheet path '{bms_path}' is not valid."
+			try:
+				# Import the data into the loadsheet object.
+				self.ls = load.Loadsheet.from_bms(bms_path)
+				print("[INFO]\tBMS Imported")
+				self.loadsheet_built = True
+
+			except Exception as e:
+				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+
+		except Exception as e:
+			print("[ERROR]\tCould not load: {}".format(e))
+
+	# end by sypks
 
 	def validate_loadsheet(self):
 		""" Try to build the loadsheet. If theres an error, print it out but don't blow up. """

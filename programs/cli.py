@@ -126,9 +126,17 @@ class Mapper(cmd.Cmd):
 			print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
 			return
 
+		# 01132021: why was this using the from_loadsheet import method?
+		# if import_type == 'bms':
+		# 	print("[INFO]\tImporting from BMS file...")
+		# 	self.handler.import_loadsheet(path, has_normalized_fields=False)
+
+		# changed call here and created import_bms method in handler
+		# to address this error; not a permanent fix..
 		if import_type == 'bms':
 			print("[INFO]\tImporting from BMS file...")
-			self.handler.import_loadsheet(path, has_normalized_fields=False)
+			self.handler.import_bms(path, has_normalized_fields=False)
+		# end by sypks
 
 		elif import_type == 'loadsheet':
 			print("[INFO]\tImporting from loadsheet...")

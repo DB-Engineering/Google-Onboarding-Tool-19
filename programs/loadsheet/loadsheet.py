@@ -37,13 +37,15 @@ from rules.rules import Rules
 
 # Module GOBAL and CONTRAINTS
 
-_REQ_INPUT_HEADERS = [
-		"objectid",
-		"objecttype",
-		"deviceid",
-		"objectname",
-		'units'
+# 01132021: bms specific
+_REQ_INPUT_HEADERS_BMS = [
+		'objectid',
+		'deviceid',
+		'objectname'
 		]
+
+# 01132021: general
+_REQ_INPUT_HEADERS = _REQ_INPUT_HEADERS_BMS + ['units', 'objecttype']
 
 _REQ_OUTPUT_HEADERS = [
 		'required',
@@ -105,14 +107,20 @@ class Loadsheet:
 			self,
 			data: List[Dict[str,Any]],
 			std_header_map: Dict[str,str],
-			has_normalized_fields: bool= False,
+
+			#has_normalized_fields: bool= False,
 			):
 
-		assert Loadsheet._is_valid_headers(data[0].keys(), has_normalized_fields) == True,\
-				"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
-				headers:\n {}".format(', '.join(data[0].keys()),', '.join(
-					*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
-					else _REQ_INPUT_HEADERS]))
+		# 01132021: moved this check to import format specific method(s)
+		#		currently a quick fix for a much broader update refactor
+		#		that needs to be done
+		# assert Loadsheet._is_valid_headers(data[0].keys(), has_normalized_fields) == True,\
+		# 		"[ERROR] loadsheet headers:\n {} \ndo not match configuration \
+		# 		headers:\n {}".format(', '.join(data[0].keys()),', '.join(
+		# 			*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
+		# 			else _REQ_INPUT_HEADERS]))
+		# # end by sypks
+    
 		self._data = data
 		self._std_header_map = std_header_map
 
@@ -120,7 +128,7 @@ class Loadsheet:
 	def from_loadsheet(
 			cls,
 			filepath: str,
-			has_normalized_fields: bool
+			has_normalized_fields: bool= False
 			):
 		"""
 		Initializes loadsheet object from existing loadsheet Excel file
@@ -137,6 +145,7 @@ class Loadsheet:
 		}
 		file_type = os.path.splitext(filepath)[1]
 
+
 		if file_type == '.xlsx':
 			df = pd.read_excel(filepath, header= 0)
 		elif file_type == '.csv':
@@ -144,7 +153,23 @@ class Loadsheet:
 		std_header_map = Loadsheet._to_std_header_mapping(
 				df.columns)
 		df.columns = std_header_map.keys()
-		return cls(df.to_dict('records'), std_header_map, has_normalized_fields)
+
+		# 01132021: check to ensure that document has required headers
+		if not Loadsheet._is_valid_headers(
+				df.columns,
+				_REQ_INPUT_HEADERS,
+				has_normalized_fields
+				):
+			raise RuntimeError("[ERROR] Loadsheet headers:\n {} \nDoes not match "
+				+ "configuration headers:\n {}".format(', '.join(df.columns.tolist()),', '.join(
+		 		*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
+		 		else _REQ_INPUT_HEADERS])))
+
+		return cls(
+			df.to_dict('records'),
+			std_header_map
+			)
+		# end by sypks
 
 	@classmethod
 	def from_bms(
@@ -164,7 +189,21 @@ class Loadsheet:
 		std_header_map = Loadsheet._to_std_header_mapping(
 				df.columns)
 		df.columns = std_header_map.keys()
-		return cls(df.to_dict('records'), std_header_map)
+
+		# 01132021: check to ensure that document has required headers
+		if not Loadsheet._is_valid_headers(
+				df.columns,
+				_REQ_INPUT_HEADERS_BMS
+				):
+			raise RuntimeError("[ERROR] BMS headers:\n {} \nDoes not match "
+				"configuration headers:\n {}".format(', '.join(df.columns.tolist()),', '.join(
+		 		_REQ_INPUT_HEADERS_BMS)))
+
+		return cls(
+			df.to_dict('records'),
+			std_header_map
+			)
+		# end by sypks
 
 	def _rename_to_std(df):
 		df.columns = self._std_header_map.values()
@@ -183,18 +222,24 @@ class Loadsheet:
 		return [sh.translate(trans_table).lower() for sh in headers]
 
 	@staticmethod
-	def _is_valid_headers(headers: List[str], has_normalized_fields: bool) -> bool:
+	def _is_valid_headers(
+			headers: List[str],
+			required_input_headers: List[str], 
+			has_normalized_fields: bool= False
+			) -> bool:
 		'''
 		Checks column names from loadsheet or BMS file are valid as
 		defined in _REQ_INPUT_HEADERS and _REQ_OUTPUT_HEADERS
 		'''
 		trans_headers = Loadsheet._to_std_headers(headers)
 		if has_normalized_fields:
-			return set(_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS).\
-					   issubset(set(trans_headers))
+
+			return set(required_input_headers+_REQ_OUTPUT_HEADERS) == \
+				set(required_input_headers+_REQ_OUTPUT_HEADERS).intersection(
+					set(trans_headers))
 		else:
-			return set(_REQ_INPUT_HEADERS).\
-					   issubset(set(trans_headers))
+			return set(required_input_headers) == \
+				set(required_input_headers).intersection(set(trans_headers))
 
 	@staticmethod
 	def _to_std_header_mapping(
@@ -423,3 +468,6 @@ class Loadsheet:
 				#apply rules
 				else:
 					r.ApplyRules(row)
+
+if __name__ == '__main__':
+	k = Loadsheet.from_bms(r'C:\Users\ShaneSpencer\Downloads\OnboardingTool-master\OnboardingTool-master\resources\bms_exports\alc\US-MTV-1395.csv')
