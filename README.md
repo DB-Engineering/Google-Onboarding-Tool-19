@@ -17,7 +17,7 @@ This repo requires a few libraries be installed prior to use:
 
 If not installed, setup libraries using
 
-`python setup.py`
+`<python setup.py>`
 
 This repo contains a few critical pieces:
 
