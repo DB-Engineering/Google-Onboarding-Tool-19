@@ -309,6 +309,8 @@ class Types:
 				if len(i.split('/')) > 1:
 					tmp_namespace = i.split('/')[0]
 					tmp_i = i.split('/')[1]
+					if tmp_namespace == '':
+						tmp_namespace = 'GLOBAL'
 					_get_fields(tmp_namespace,tmp_i)
 
 				# Get the fields of a type in the global namespace
