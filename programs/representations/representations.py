@@ -94,7 +94,7 @@ class Asset:
 			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
 			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'Placeholder', 'objecttype':'Placeholder', 'units':''}
 			self.placeholderid += 1
-			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder = true)
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder = True)
 		else:
 			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
 
