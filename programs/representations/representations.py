@@ -16,7 +16,7 @@ import json
 import base64
 
 import sys
-sys.path.append('../')
+sys.path.append('..\\')
 
 import ontology.ontology
 from pretty import PrettyPrint
@@ -91,10 +91,10 @@ class Asset:
 		"""
 		assert field_name not in self.fields, "Field {} already set.".format(field_name)
 		if placeholder:
-			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'', 'type':''}
-			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'Placeholder', 'objecttype':'Placeholder', 'units':''}
+			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'x', 'type':'x'}
+			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'x', 'objecttype':'x', 'units':''}
 			self.placeholderid += 1
-			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped, placeholder = True)
+			self.fields[field_name] = Field(field_name,self.bms_info,self.bacnet_address,manually_mapped, placeholder = True)
 		else:
 			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
 
@@ -482,51 +482,47 @@ class Assets:
 		"""
 		# TODO: Create loadsheet config object set
 		data = self.dump_all_assets()
-	    out_data = []
+		out_data = []
 		for asset in data:
 			for field in data[asset]['fields']:
-                try:
-                    fullAssetPath = data[asset]['full_asset_name']
-                    assetName = data[asset]['asset_name']
-                    building = data[asset]['building']
-                    generalType = data[asset]['general_type']
-                    typeName = data[asset]['type_name']
-                    standardFieldName = field
-                    deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
-                    objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
-                    objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
-                    objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
-                    units = data[asset]['fields'][field]['bacnet_address']['units']
-                    location = data[asset]['fields'][field]['bms_info']['location']
-                    controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
-                    manually_mapped = data[asset]['fields'][field]['manually_mapped']
-                    name = data[asset]['fields'][field]['bms_info']['name']
-                    path = data[asset]['fields'][field]['bms_info']['path']
-                    ttype = data[asset]['fields'][field]['bms_info']['type']
-                    row = {
-                        'location':location,
-                        'controlprogram':controlProgram,
-                        'name':name,
-                        'type':ttype,
-                        'path':path,
-                        'deviceid':deviceId,
-                        'objecttype':objectType,
-                        'objectid':objectId,
-                        'objectname':objectName,
-                        'units':units,
-                        'required':'YES',
-                        'manuallymapped':manually_mapped,
-                        'building':building,
-                        'generaltype':generalType,
-                        'typename':typeName,
-                        'assetname':assetName,
-                        'fullassetpath':fullAssetPath,
-                        'standardfieldname':standardFieldName
-                    }
-                    out_data.append(row)
-                except Exception as e:
-                    print(e)
-                    continue
+				fullAssetPath = data[asset]['full_asset_name']
+				assetName = data[asset]['asset_name']
+				building = data[asset]['building']
+				generalType = data[asset]['general_type']
+				typeName = data[asset]['type_name']
+				standardFieldName = field
+				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
+				objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
+				objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
+				objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
+				units = data[asset]['fields'][field]['bacnet_address']['units']
+				location = data[asset]['fields'][field]['bms_info']['location']
+				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
+				manually_mapped = data[asset]['fields'][field]['manually_mapped']
+				name = data[asset]['fields'][field]['bms_info']['name']
+				path = data[asset]['fields'][field]['bms_info']['path']
+				ttype = data[asset]['fields'][field]['bms_info']['type']
+				row = {
+					'location':location,
+					'controlprogram':controlProgram,
+					'name':name,
+					'type':ttype,
+					'path':path,
+					'deviceid':deviceId,
+					'objecttype':objectType,
+					'objectid':objectId,
+					'objectname':objectName,
+					'units':units,
+					'required':'YES',
+					'manuallymapped':manually_mapped,
+					'building':building,
+					'generaltype':generalType,
+					'typename':typeName,
+					'assetname':assetName,
+					'fullassetpath':fullAssetPath,
+					'standardfieldname':standardFieldName
+				}
+				out_data.append(row)
 		if len(self.ununsed_data)>0:
 			for row in self.ununsed_data:
 				out_data.append(row)
