@@ -482,47 +482,51 @@ class Assets:
 		"""
 		# TODO: Create loadsheet config object set
 		data = self.dump_all_assets()
-		out_data = []
+	    out_data = []
 		for asset in data:
 			for field in data[asset]['fields']:
-				fullAssetPath = data[asset]['full_asset_name']
-				assetName = data[asset]['asset_name']
-				building = data[asset]['building']
-				generalType = data[asset]['general_type']
-				typeName = data[asset]['type_name']
-				standardFieldName = field
-				deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
-				objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
-				objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
-				objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
-				units = data[asset]['fields'][field]['bacnet_address']['units']
-				location = data[asset]['fields'][field]['bms_info']['location']
-				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
-				manually_mapped = data[asset]['fields'][field]['manually_mapped']
-				name = data[asset]['fields'][field]['bms_info']['name']
-				path = data[asset]['fields'][field]['bms_info']['path']
-				ttype = data[asset]['fields'][field]['bms_info']['type']
-				row = {
-					'location':location,
-					'controlprogram':controlProgram,
-					'name':name,
-					'type':ttype,
-					'path':path,
-					'deviceid':deviceId,
-					'objecttype':objectType,
-					'objectid':objectId,
-					'objectname':objectName,
-					'units':units,
-					'required':'YES',
-					'manuallymapped':manually_mapped,
-					'building':building,
-					'generaltype':generalType,
-					'typename':typeName,
-					'assetname':assetName,
-					'fullassetpath':fullAssetPath,
-					'standardfieldname':standardFieldName
-				}
-				out_data.append(row)
+                try:
+                    fullAssetPath = data[asset]['full_asset_name']
+                    assetName = data[asset]['asset_name']
+                    building = data[asset]['building']
+                    generalType = data[asset]['general_type']
+                    typeName = data[asset]['type_name']
+                    standardFieldName = field
+                    deviceId = data[asset]['fields'][field]['bacnet_address']['deviceid']
+                    objectId = data[asset]['fields'][field]['bacnet_address']['objectid']
+                    objectName = data[asset]['fields'][field]['bacnet_address']['objectname']
+                    objectType = data[asset]['fields'][field]['bacnet_address']['objecttype']
+                    units = data[asset]['fields'][field]['bacnet_address']['units']
+                    location = data[asset]['fields'][field]['bms_info']['location']
+                    controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
+                    manually_mapped = data[asset]['fields'][field]['manually_mapped']
+                    name = data[asset]['fields'][field]['bms_info']['name']
+                    path = data[asset]['fields'][field]['bms_info']['path']
+                    ttype = data[asset]['fields'][field]['bms_info']['type']
+                    row = {
+                        'location':location,
+                        'controlprogram':controlProgram,
+                        'name':name,
+                        'type':ttype,
+                        'path':path,
+                        'deviceid':deviceId,
+                        'objecttype':objectType,
+                        'objectid':objectId,
+                        'objectname':objectName,
+                        'units':units,
+                        'required':'YES',
+                        'manuallymapped':manually_mapped,
+                        'building':building,
+                        'generaltype':generalType,
+                        'typename':typeName,
+                        'assetname':assetName,
+                        'fullassetpath':fullAssetPath,
+                        'standardfieldname':standardFieldName
+                    }
+                    out_data.append(row)
+                except Exception as e:
+                    print(e)
+                    continue
 		if len(self.ununsed_data)>0:
 			for row in self.ununsed_data:
 				out_data.append(row)
