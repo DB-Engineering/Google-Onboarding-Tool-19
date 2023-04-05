@@ -64,28 +64,32 @@ This repo contains a few critical pieces:
 	
 	Add duplicate fields to fake type -- should return error
 
-2. Import the raw loadsheet:
+2. Normalize column names so loadsheet can be imported:
+
+	`>>> prettyify ./path/to/raw/loadsheet.xlsx`
+
+3. Import the raw loadsheet:
 
 	`>>> import loadsheet '../loadsheet/Loadsheet_ALC.xlsx'`
 
 	Should get CLI confirmation
 
-3. Normalize the loadsheet:
+4. Normalize the loadsheet:
 
 	`>>> normalize '../resources/rules/google_rules.json'`
 
 	Should get CLI confirmation
 
-4. Export to a new loadsheet for review:
+5. Export to a new loadsheet for review:
 
 	`>>> export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'`
 
 	Should see a new file with normalized fields filled in.
 	Rules should have been applied.
 
-5. Perform a manual review and repeat steps 2, 3, and 4 as necessary.
+6. Perform a manual review and repeat steps 2, 3, and 4 as necessary.
 
-6. Import and validate finished loadsheet:
+7. Import and validate finished loadsheet:
 
 	`>>> import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'
 	
@@ -97,11 +101,11 @@ This repo contains a few critical pieces:
 	- an invalid standard field name
 	- missing bacnet info
 
-7. When no validation errors are issued, types can be matched:
+8. When no validation errors are issued, types can be matched:
 
 	`>>> match`
 
-8. Perform a review of type matches and assign to a valid canonical type.
+9. Perform a review of type matches and assign to a valid canonical type.
 
 	`>>> review generalTypes`
 	`>>> review generalTypes VAV`
@@ -112,7 +116,7 @@ This repo contains a few critical pieces:
 	`>>> review matches`
 
 
-9. Apply the matched types
+10. Apply the matched types
 	Either review all matches made using
 
 	`>>> apply all`
@@ -120,6 +124,10 @@ This repo contains a few critical pieces:
 	Or Autoapply exact matches and only review inexact using
 
 	`>>> apply close`
+
+11. Convert normalized loadsheet to ABEL spreadsheet
+
+	`>>> convert abel ./path/to/building/payload.csv`
 
 
 ## Known Issues and Future Development
