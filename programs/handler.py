@@ -1,17 +1,18 @@
-#Copyright 2020 DB Engineering
+# Copyright 2020 DB Engineering
 
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 
 #    http://www.apache.org/licenses/LICENSE-2.0
 
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from abel_converter import abel
 import os
 import representations.representations
 import ontology.ontology
@@ -21,282 +22,305 @@ import base64
 
 
 def _convert_to_base64(data):
-	"""
-	Convert a data object into a base64 message.
-	Used as a codeword to uniquely identify each asset type
-	"""
+    """
+    Convert a data object into a base64 message.
+    Used as a codeword to uniquely identify each asset type
+    """
 
-	if isinstance(data,set):
-		data = list(data)
-		data.sort()
-		data = tuple(data)
-		data = str(data)
+    if isinstance(data, set):
+        data = list(data)
+        data.sort()
+        data = tuple(data)
+        data = str(data)
 
-	if isinstance(data,list):
-		data.sort()
-		data = tuple(data)
-		data = str(data)
+    if isinstance(data, list):
+        data.sort()
+        data = tuple(data)
+        data = str(data)
 
-	if isinstance(data,tuple):
-		data = str(data)
+    if isinstance(data, tuple):
+        data = str(data)
 
-	encoded_bytes = base64.b64encode(data.encode("utf-8"))
-	encoded_str = str(encoded_bytes, "utf-8")
+    encoded_bytes = base64.b64encode(data.encode("utf-8"))
+    encoded_str = str(encoded_bytes, "utf-8")
 
-	return encoded_str
+    return encoded_str
+
 
 def _print_type(type, type_dict):
-	"""
-	prints out a type's assets and fields
-	"""
-	print(f"ASSET GENERAL TYPE: {type}")
-	print("--------------------------------------------------------------------------------")
-	for field_hash in type_dict.keys():
-		assets = type_dict[field_hash][0]
-		fields = type_dict[field_hash][1]
-		col_width = max(len(field) for field in fields) + 3
+    """
+    prints out a type's assets and fields
+    """
+    print(f"ASSET GENERAL TYPE: {type}")
+    print("--------------------------------------------------------------------------------")
+    for field_hash in type_dict.keys():
+        assets = type_dict[field_hash][0]
+        fields = type_dict[field_hash][1]
+        col_width = max(len(field) for field in fields) + 3
 
-		print(f"ASSETS: {assets}\n")
-		print("FIELDS")
-		print("="*col_width)
-		print("\n".join(fields))
-		print("\n\n")
+        print(f"ASSETS: {assets}\n")
+        print("FIELDS")
+        print("="*col_width)
+        print("\n".join(fields))
+        print("\n\n")
+
 
 class Handler:
-	"""
-	Handler object for handling onboarding workflow.
-	Acts as an interface between the CLI and the following libraries:
-	 - representations: for converting the loadsheet into ontology-usable objects
-	 - ontology: for asset validation and tMatching
-	 - loadsheet: for loadsheet and bms imports and exports
-	 			  as well as interaction with the rules engine
-	"""
-	def __init__(self):
-		""" Initialize the handler. """
-		# Create some flags to mark the status of the processes
-		self.ontology_built = False
-		self.representations_built = False
-		self.loadsheet_built = False
-		self.validated = False
-		self.matched = False
+    """
+    Handler object for handling onboarding workflow.
+    Acts as an interface between the CLI and the following libraries:
+     - representations: for converting the loadsheet into ontology-usable objects
+     - ontology: for asset validation and tMatching
+     - loadsheet: for loadsheet and bms imports and exports
+                              as well as interaction with the rules engine
+    """
 
-		# Save some config info so that it can be reused
-		self.last_loadsheet_path = ''
-		self.last_rule_path = ''
+    def __init__(self):
+        """ Initialize the handler. """
+        # Create some flags to mark the status of the processes
+        self.ontology_built = False
+        self.representations_built = False
+        self.loadsheet_built = False
+        self.validated = False
+        self.matched = False
 
-	def build_ontology(self, ontology_root):
-		"""
-		Try to build the ontology. If theres an error, print it out but don't blow up.
-		args:
-			- ontology_root: the root folder of the ontology to be imported
+        # Save some config info so that it can be reused
+        self.last_loadsheet_path = ''
+        self.last_rule_path = ''
 
-		returns: N/A
-		"""
-		try:
-			# Adjust the resource directory in the ontology file to import from the desired location.
-			# Build the ontology.
-			ont = ontology.ontology.Ontology(ontology_root)
-			ont.validate_without_errors()
-			self.ontology_built = True
-			self.ontology = ont
-			print(f"[INFO]\tOntology built from '{ontology_root}'.")
+    def build_ontology(self, ontology_root):
+        """
+        Try to build the ontology. If theres an error, print it out but don't blow up.
+        args:
+                - ontology_root: the root folder of the ontology to be imported
 
-		except Exception as e:
-			# Raise the exception to the user
-			print(f"[WARNING]\tOntology could not build: {e}")
+        returns: N/A
+        """
+        try:
+            # Adjust the resource directory in the ontology file to import from the desired location.
+            # Build the ontology.
+            ont = ontology.ontology.Ontology(ontology_root)
+            ont.validate_without_errors()
+            self.ontology_built = True
+            self.ontology = ont
+            print(f"[INFO]\tOntology built from '{ontology_root}'.")
 
-	def import_loadsheet(self, loadsheet_path, has_normalized_fields):
-		"""
-		Attempts to build loadsheet from given filepath
-		If errors occur, prints them but doesn't close program
+        except Exception as e:
+            # Raise the exception to the user
+            print(f"[WARNING]\tOntology could not build: {e}")
 
-		args:
-			- loadsheet_path: path of loadsheet Excel or BMS file
-			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
-			                         or loadsheet (normalized fields)
+    def import_loadsheet(self, loadsheet_path, has_normalized_fields):
+        """
+        Attempts to build loadsheet from given filepath
+        If errors occur, prints them but doesn't close program
 
-		returns: N/A
-		"""
-		# Check that the ontology is built first.
-		#if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
-		#	print('[ERROR]\tOntology not built. Build it first.')
-		#	return
+        args:
+                - loadsheet_path: path of loadsheet Excel or BMS file
+                - has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+                                         or loadsheet (normalized fields)
 
-		try:
-			valid_file_types = {
-				'.xlsx':'excel',
-				'.csv':'bms_file'
-			}
-			file_type = os.path.splitext(loadsheet_path)[1]
+        returns: N/A
+        """
+        # Check that the ontology is built first.
+        # if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
+        # print('[ERROR]\tOntology not built. Build it first.')
+        # return
 
-			assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
-			assert os.path.exists(loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
-			try:
-				# Import the data into the loadsheet object.
-				self.ls = load.Loadsheet.from_loadsheet(loadsheet_path, has_normalized_fields)
-				print("[INFO]\tLoadsheet Imported")
-				self.loadsheet_built = True
+        try:
+            valid_file_types = {
+                '.xlsx': 'excel',
+                '.csv': 'bms_file'
+            }
+            file_type = os.path.splitext(loadsheet_path)[1]
 
-			except Exception as e:
-				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+            assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
+            assert os.path.exists(
+                loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
+            try:
+                # Import the data into the loadsheet object.
+                self.ls = load.Loadsheet.from_loadsheet(
+                    loadsheet_path, has_normalized_fields)
+                print("[INFO]\tLoadsheet Imported")
+                self.loadsheet_built = True
 
-		except Exception as e:
-			print("[ERROR]\tCould not load: {}".format(e))
+            except Exception as e:
+                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
-	# 01132021: ad-hoc fix for bms import error; needs to be addressed 
-	#		later. Fix done to address demo issues Trevor had earlier
-	#		in the day. Currently do not have time to refactor =(. 
-	#		basically took the source code directly above and reused w/
-	#		minimal modification
-	def import_bms(self, bms_path, has_normalized_fields):
-		"""
-		Attempts to build loadsheet from given filepath
-		If errors occur, prints them but doesn't close program
+        except Exception as e:
+            print("[ERROR]\tCould not load: {}".format(e))
 
-		args:
-			- loadsheet_path: path of loadsheet Excel or BMS file
-			- has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
-			                         or loadsheet (normalized fields)
+    # 01132021: ad-hoc fix for bms import error; needs to be addressed
+    # later. Fix done to address demo issues Trevor had earlier
+    # in the day. Currently do not have time to refactor =(.
+    # basically took the source code directly above and reused w/
+    # minimal modification
+    def import_bms(self, bms_path, has_normalized_fields):
+        """
+        Attempts to build loadsheet from given filepath
+        If errors occur, prints them but doesn't close program
 
-		returns: N/A
-		"""
-		# Check that the ontology is built first.
-		#if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
-		#	print('[ERROR]\tOntology not built. Build it first.')
-		#	return
+        args:
+                - loadsheet_path: path of loadsheet Excel or BMS file
+                - has_normalized_fields: flag if passed path is to BMS type (no normalized fields)
+                                         or loadsheet (normalized fields)
 
-		try:
-			valid_file_types = {
-				'.xlsx':'excel',
-				'.csv':'bms_file'
-			}
-			file_type = os.path.splitext(bms_path)[1]
+        returns: N/A
+        """
+        # Check that the ontology is built first.
+        # if not self.ontology_built:    #Ontology necessary for matching, not loadsheet
+        # print('[ERROR]\tOntology not built. Build it first.')
+        # return
 
-			assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
-			assert os.path.exists(bms_path), f"Loadsheet path '{bms_path}' is not valid."
-			try:
-				# Import the data into the loadsheet object.
-				self.ls = load.Loadsheet.from_bms(bms_path)
-				print("[INFO]\tBMS Imported")
-				self.loadsheet_built = True
+        try:
+            valid_file_types = {
+                '.xlsx': 'excel',
+                '.csv': 'bms_file'
+            }
+            file_type = os.path.splitext(bms_path)[1]
 
-			except Exception as e:
-				print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+            assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
+            assert os.path.exists(
+                bms_path), f"Loadsheet path '{bms_path}' is not valid."
+            try:
+                # Import the data into the loadsheet object.
+                self.ls = load.Loadsheet.from_bms(bms_path)
+                print("[INFO]\tBMS Imported")
+                self.loadsheet_built = True
 
-		except Exception as e:
-			print("[ERROR]\tCould not load: {}".format(e))
+            except Exception as e:
+                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
-	# end by sypks
+        except Exception as e:
+            print("[ERROR]\tCould not load: {}".format(e))
 
-	def validate_loadsheet(self):
-		""" Try to build the loadsheet. If theres an error, print it out but don't blow up. """
+    # end by sypks
 
-		# Check that the ontology is built first.
-		if not self.ontology_built:
-			print('[ERROR]\tOntology not built. Build it first.')
-			return
+    def validate_loadsheet(self):
+        """ Try to build the loadsheet. If theres an error, print it out but don't blow up. """
 
-		try:
+        # Check that the ontology is built first.
+        if not self.ontology_built:
+            print('[ERROR]\tOntology not built. Build it first.')
+            return
 
-			# Validate the loadsheet
-			print('[INFO]\tValidating loadsheet.')
-			self.ls.validate()
-			print('[INFO]\tValidation complete, no errors.')
+        try:
 
-			try:
-				# Convert the loadsheet to validation
-				print('[INFO]\tConverting loadsheet into asset representations.')
-				self.reps = representations.representations.Assets()
-				self.reps.load_from_data(self.ls._data)
-				print('[INFO]\tAsset representations built.')
+            # Validate the loadsheet
+            print('[INFO]\tValidating loadsheet.')
+            self.ls.validate()
+            print('[INFO]\tValidation complete, no errors.')
 
-				# Validate the representations
-				print('[INFO]\tValidating assets.')
-				self.reps.validate(self.ontology)
-				print('[INFO]\tAsset representations validated!')
-				self.representations_built = True
+            try:
+                # Convert the loadsheet to validation
+                print('[INFO]\tConverting loadsheet into asset representations.')
+                self.reps = representations.representations.Assets()
+                self.reps.load_from_data(self.ls._data)
+                print('[INFO]\tAsset representations built.')
 
-				print('[INFO]\tBuilding type representations...')
-				self.general_types = self.reps.get_general_types()
-				self.types = self.reps.determine_types()
-				print(f'[INFO]\tType representations built: {len(self.general_types)} general types, {len(self.types)} unique types')
-				self.validated = True
+                # Validate the representations
+                print('[INFO]\tValidating assets.')
+                self.reps.validate(self.ontology)
+                print('[INFO]\tAsset representations validated!')
+                self.representations_built = True
 
-			except Exception as e:
-				print(f"[ERROR]\tAsset represtations failed to build: {e}. ")
+                print('[INFO]\tBuilding type representations...')
+                self.general_types = self.reps.get_general_types()
+                self.types = self.reps.determine_types()
+                print(
+                    f'[INFO]\tType representations built: {len(self.general_types)} general types, {len(self.types)} unique types')
+                self.validated = True
 
-		except Exception as e:
-			print(f"[ERROR]\tLoadsheet raised errors: {e}")
+            except Exception as e:
+                print(f"[ERROR]\tAsset represtations failed to build: {e}. ")
 
-	def apply_rules(self,rules_path):     ####### REWRITE ME
-		""" Run a given rules file over the loadsheet data. """
+        except Exception as e:
+            print(f"[ERROR]\tLoadsheet raised errors: {e}")
 
-		try:
-			assert self.loadsheet_built, "Loadsheet is not initialized."
-			assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
-			print(f"[INFO]\tApplying rules from '{rules_path}'")
-			self.ls.apply_rules(rules_path)
-			print("[INFO]\tRules applied.")
+    def apply_rules(self, rules_path):  # REWRITE ME
+        """ Run a given rules file over the loadsheet data. """
 
-		except Exception as e:
-			print(f"[ERROR]\tRules could not be applied: {e}.")
+        try:
+            assert self.loadsheet_built, "Loadsheet is not initialized."
+            assert os.path.exists(
+                rules_path), f"Rule file path '{rules_path}' is not valid."
+            print(f"[INFO]\tApplying rules from '{rules_path}'")
+            self.ls.apply_rules(rules_path)
+            print("[INFO]\tRules applied.")
 
-	def export_loadsheet(self,excel_path):
-		"""
-		exports loadshet data to excel file
+        except Exception as e:
+            print(f"[ERROR]\tRules could not be applied: {e}.")
 
-		args:
-			- excel_path: output filepath
+    def export_loadsheet(self, excel_path):
+        """
+        exports loadshet data to excel file
 
-		returns: N/A
-		"""
+        args:
+                - excel_path: output filepath
 
-		try:
-			#Check that the loadsheet object is built.
-			assert self.loadsheet_built, "Loadsheet is not initialized."
-			folderpath = excel_path.replace(excel_path.split('/')[-1],'')
-			assert os.path.exists(folderpath[:-1]), "Specified Excel path '{}' is not valid.".format(folderpath[:-1])
-			print("[INFO]\tExporting to Excel file '{}'".format(excel_path))
-			self.ls.export_to_loadsheet(excel_path)
-			print("[INFO]\tData exported to Excel file!")
+        returns: N/A
+        """
 
-		except Exception as e:
-			print('[ERROR]\tExcel file not exported: {}'.format(e))
+        try:
+            # Check that the loadsheet object is built.
+            assert self.loadsheet_built, "Loadsheet is not initialized."
+            folderpath = excel_path.replace(excel_path.split('/')[-1], '')
+            assert os.path.exists(
+                folderpath[:-1]), "Specified Excel path '{}' is not valid.".format(folderpath[:-1])
+            print("[INFO]\tExporting to Excel file '{}'".format(excel_path))
+            self.ls.export_to_loadsheet(excel_path)
+            print("[INFO]\tData exported to Excel file!")
 
-	def import_excel(self,excel_path):
-		""" Import from an Excel file. """
-		try:
-			# Check that the loadsheet object is built.
-			if not self.loadsheet_built:
-				self.ls = loadsheet.loadsheet.Loadsheet()
-				self.loadsheet_built = True
+        except Exception as e:
+            print('[ERROR]\tExcel file not exported: {}'.format(e))
 
-			if excel_path is None and self.last_loadsheet_path != '':
-				excel_path = self.last_loadsheet_path
-			assert os.path.exists(excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
-			self.last_loadsheet_path = excel_path
+    def export_abel_spreadsheet(self, excel_path, payload_path):
+        """converts loadsheet to ABEL spreadsheet.
 
-			print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
-			self.ls.from_loadsheet(excel_path)
+        args:
+                - excel_path: path to normalized loadsheet.
+                - payload_path: 
+        """
+        new_converter = abel.Abel()
+        new_converter.import_loadsheet(excel_path)
+        new_converter.import_payload(payload_path, format='csv')
+        new_converter.build()
+        new_converter.dump(excel_path)
 
-		except Exception as e:
-			print('[ERROR]\tExcel file not imported: {}'.format(e))
+    def import_excel(self, excel_path):
+        """ Import from an Excel file. """
+        try:
+            # Check that the loadsheet object is built.
+            if not self.loadsheet_built:
+                self.ls = load.Loadsheet()
+                self.loadsheet_built = True
 
-	def review_types(self,general_type=None):
-		"""
-		lets user review assets by generaltype
+            if excel_path is None and self.last_loadsheet_path != '':
+                excel_path = self.last_loadsheet_path
+            assert os.path.exists(
+                excel_path), "Specified Excel path '{}' is not valid.".format(excel_path)
+            self.last_loadsheet_path = excel_path
 
-		args:
-			- general_type: User can input type and see all assets of that type
-						    Default None
+            print("[INFO]\tImporting from Excel file '{}'".format(excel_path))
+            self.ls.from_loadsheet(excel_path)
 
-		returns: N/A, prints review data to cmd
-		"""
-		if not self.validated:
-			print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
-			return
+        except Exception as e:
+            print('[ERROR]\tExcel file not imported: {}'.format(e))
 
-		'''
+    def review_types(self, general_type=None):
+        """
+        lets user review assets by generaltype
+
+        args:
+                - general_type: User can input type and see all assets of that type
+                                            Default None
+
+        returns: N/A, prints review data to cmd
+        """
+        if not self.validated:
+            print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
+            return
+
+        '''
 		types is a dictionary of dictionary of list pairs
 		each instance is of form
 		"general_type":{
@@ -305,85 +329,87 @@ class Handler:
 		}
 		'''
 
-		types = {}
+        types = {}
 
-		for asset_path in self.reps.assets:
-			asset = self.reps.assets[asset_path]
-			field_hash = _convert_to_base64(asset.get_fields())
-			gT = asset.general_type.lower()
-			if gT not in types.keys():
-				types[gT] = {}
-			if field_hash not in types[gT].keys():
-				types[gT][field_hash] = [[],asset.get_fields()]
-			types[gT][field_hash][0].append(asset.full_asset_name)
+        for asset_path in self.reps.assets:
+            asset = self.reps.assets[asset_path]
+            field_hash = _convert_to_base64(asset.get_fields())
+            gT = asset.general_type.lower()
+            if gT not in types.keys():
+                types[gT] = {}
+            if field_hash not in types[gT].keys():
+                types[gT][field_hash] = [[], asset.get_fields()]
+            types[gT][field_hash][0].append(asset.full_asset_name)
 
-		#now we print
-		if general_type is not None:
-			if general_type.lower() not in types.keys():
-				print(f"[ERROR]\tGeneral Type {general_type} not present in loadsheet. Valid types are {[type for type in types.keys()]}")
-				return
-			relevant_assets = types[general_type.lower()]
-			_print_type(general_type, relevant_assets)
-		else:
-			for type in types.keys():
-				_print_type(type, types[type])
+        # now we print
+        if general_type is not None:
+            if general_type.lower() not in types.keys():
+                print(
+                    f"[ERROR]\tGeneral Type {general_type} not present in loadsheet. Valid types are {[type for type in types.keys()]}")
+                return
+            relevant_assets = types[general_type.lower()]
+            _print_type(general_type, relevant_assets)
+        else:
+            for type in types.keys():
+                _print_type(type, types[type])
 
-	def review_matches(self):
-		"""
-		reviews matches made once assets have been matched to the ontology
-		match types are in {EXACT, CLOSE, INCOMPLETE, NONE}
-		See match_types for more information
+    def review_matches(self):
+        """
+        reviews matches made once assets have been matched to the ontology
+        match types are in {EXACT, CLOSE, INCOMPLETE, NONE}
+        See match_types for more information
 
-		args: N/A
+        args: N/A
 
-		returns: N/A, but prints review to cmd
-		"""
-		if not self.matched:
-			return
+        returns: N/A, but prints review to cmd
+        """
+        if not self.matched:
+            return
 
-		matches = {}
-		for asset_path in self.reps.assets:
-			asset = self.reps.assets[asset_path]
-			match = asset.match
-			if match.match_type not in matches.keys():
-				matches[match.match_type] = []
-			matches[match.match_type].append(asset.full_asset_name)
+        matches = {}
+        for asset_path in self.reps.assets:
+            asset = self.reps.assets[asset_path]
+            match = asset.match
+            if match.match_type not in matches.keys():
+                matches[match.match_type] = []
+            matches[match.match_type].append(asset.full_asset_name)
 
-		for match in matches:
-			print(f"[{match}]: {matches[match]}")
-			print('---------------------------------------------------------------------------------------------------------------------------------------------------\n\n')
+        for match in matches:
+            print(f"[{match}]: {matches[match]}")
+            print('---------------------------------------------------------------------------------------------------------------------------------------------------\n\n')
 
-	def match_types(self):
-		"""
-		Matches each asset to nearest asset in ontology
+    def match_types(self):
+        """
+        Matches each asset to nearest asset in ontology
 
-		prereqs:
-			- loadsheet validation
+        prereqs:
+                - loadsheet validation
 
-		args: N/A
+        args: N/A
 
-		returns: N/A
-		"""
+        returns: N/A
+        """
 
-		if not self.validated:
-			print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
-			return
-		# Get matches for all types if the general_type specified is None.
-		print("[INFO]\tMatching types to ontology...")
+        if not self.validated:
+            print("[ERROR]\tLoadsheet isn't validated yet... run 'validate' first.")
+            return
+        # Get matches for all types if the general_type specified is None.
+        print("[INFO]\tMatching types to ontology...")
 
-		for asset_path in self.reps.assets:
-			asset = self.reps.assets[asset_path]
-			match = self.ontology.find_best_fit_type(asset.get_fields(),'HVAC',asset.get_general_type())
-			asset.add_match(match)
+        for asset_path in self.reps.assets:
+            asset = self.reps.assets[asset_path]
+            match = self.ontology.find_best_fit_type(
+                asset.get_fields(), 'HVAC', asset.get_general_type())
+            asset.add_match(match)
 
-		self.matched = True
+        self.matched = True
 
-	def apply_matches(self):
-		"""
-		returns each asset, one at a time
+    def apply_matches(self):
+        """
+        returns each asset, one at a time
 
-		args: N/A
-		returns: Asset iterable
-		"""
-		for asset_path in self.reps.assets:
-			yield self.reps.assets[asset_path]
+        args: N/A
+        returns: Asset iterable
+        """
+        for asset_path in self.reps.assets:
+            yield self.reps.assets[asset_path]

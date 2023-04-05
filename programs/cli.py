@@ -18,7 +18,7 @@ import os
 import ontology.ontology
 from pyfiglet import Figlet
 from pretty import PrettyPrint
-
+from abel_converter import point_list_prettifier
 """
 
 TODO: Fix path inputs to recognize quotes.
@@ -93,17 +93,27 @@ class Mapper(cmd.Cmd):
 
 
 	"""Both quit and exit quit the application"""
-	def do_quit(self,args):
+	def do_quit(self):
 		""" Quits LoadBoy """
 		return True
-	def do_exit(self, args):
+
+	def do_exit(self):
 		""" Exits LoadBoy """
 		return True
 
-	def do_clear(self,args):
+	def do_clear(self):
 		""" Clear the current console. """
 		self._clear()
 		print(self.intro)
+
+	def do_clean(self, args):
+		inputs = self._parse_args(args)
+		raw_loadsheet_path = inputs[0]
+		print(f'RAW PATH: {raw_loadsheet_path}')
+		try:
+			point_list_prettifier.prettify_loadsheet(loadsheet_path=raw_loadsheet_path)
+		except FileNotFoundError as e:
+			raise e
 
 	def do_import(self,args):
 		"""			Facilitate the importing of data.
@@ -170,8 +180,7 @@ class Mapper(cmd.Cmd):
 			return
 
 		export_type = inputs[0]
-		path = inputs[1]
-
+		export_path = inputs[1]
 		valid_first_arg = ['excel']
 
 		# Check that the first argument is a valid import argument.
@@ -181,7 +190,17 @@ class Mapper(cmd.Cmd):
 
 		if export_type == 'excel':
 			print("[INFO]\tExporting to Excel loadsheet.")
-			self.handler.export_loadsheet(path)
+			self.handler.export_loadsheet(excel_path=export_path)
+
+	def do_convert(self, args):
+		inputs = self._parse_args(args)
+		loadsheet_path = inputs[1]
+		payload_path = inputs[2]
+		valid_first_arg = ['abel']
+		if inputs[0] not in valid_first_arg:
+			print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
+		else:
+			self.handler.export_abel_spreadsheet(excel_path=loadsheet_path, payload_path=payload_path)
 
 	def do_validate(self,args):
 		"""			Validate the loadsheet data against the ontology.
