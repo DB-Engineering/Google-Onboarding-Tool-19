@@ -106,7 +106,7 @@ class Mapper(cmd.Cmd):
 		self._clear()
 		print(self.intro)
 
-	def do_prettyify(self, args):
+	def do_clean(self, args):
 		inputs = self._parse_args(args)
 		raw_loadsheet_path = inputs[0]
 		print(f'RAW PATH: {raw_loadsheet_path}')

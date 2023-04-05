@@ -64,9 +64,9 @@ This repo contains a few critical pieces:
 	
 	Add duplicate fields to fake type -- should return error
 
-2. Normalize column names so loadsheet can be imported:
+2. Clean loadsheet for import:
 
-	`>>> prettyify ./path/to/raw/loadsheet.xlsx`
+	`>>> clean ./path/to/raw/loadsheet.xlsx`
 
 3. Import the raw loadsheet:
 
