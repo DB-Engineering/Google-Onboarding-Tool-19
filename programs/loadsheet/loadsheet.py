@@ -205,7 +205,7 @@ class Loadsheet:
 			)
 		# end by sypks
 
-	def _rename_to_std(df):
+	def _rename_to_std(self, df):
 		df.columns = self._std_header_map.values()
 
 	@staticmethod
