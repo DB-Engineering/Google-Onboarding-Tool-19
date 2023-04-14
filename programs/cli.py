@@ -129,7 +129,7 @@ class Mapper(cmd.Cmd):
 		import_type = inputs[0]
 		path = inputs[1]
 
-		valid_first_arg = ['bms','loadsheet','ontology']
+		valid_first_arg = ['bms','loadsheet','ontology','payload']
 
 		# Check that the first argument is a valid import argument.
 		if inputs[0] not in valid_first_arg:
@@ -155,6 +155,11 @@ class Mapper(cmd.Cmd):
 		elif import_type == 'ontology':
 			print("[INFO]\tImporting ontology...")
 			self.handler.build_ontology(path)
+
+		elif import_type == 'payload':
+			print("[INFO]\tImporting payload...")
+			self.handler.payload_path = path
+			print("[INFO]\tPayload imported.")
 
 	def do_normalize(self,args):
 		"""			Run the rules file given a specific rules filepath
@@ -194,13 +199,16 @@ class Mapper(cmd.Cmd):
 
 	def do_convert(self, args):
 		inputs = self._parse_args(args)
-		loadsheet_path = inputs[1]
-		payload_path = inputs[2]
 		valid_first_arg = ['abel']
 		if inputs[0] not in valid_first_arg:
 			print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
+		elif not (self.handler.payload_path or self.handler.last_loadsheet_path):
+			print("[ERROR]\t Payload and valid loadsheet must be imported before export an ABEL spreadsheet.")
 		else:
-			self.handler.export_abel_spreadsheet(excel_path=loadsheet_path, payload_path=payload_path)
+			if len(inputs) == 2:
+				self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path, output_path=inputs[1])
+			else:
+				self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path)
 
 	def do_validate(self,args):
 		"""			Validate the loadsheet data against the ontology.
