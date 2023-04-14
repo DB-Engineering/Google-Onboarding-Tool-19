@@ -50,10 +50,12 @@ class Subfield:
 
 	def validate(self):
 		""" Perform a series of validations. """
-		valid_categories = ['aggregation','component','descriptor','measurement','measurement_descriptor','point_type']
+		valid_categories = ['aggregation','aggregation_descriptor','component','descriptor','measurement','measurement_descriptor','point_type']
 
 		assert self.category in valid_categories, "{} is not a valid category.".format(self.category)
 		assert self.description, "{} is missing a category".format(self.name)
+		#print(self.category)
+		#print(self.description)
 		assert isinstance(self.name,str), "{} name is not a string.".format(self.name)
 		assert isinstance(self.category,str), "{} category is not a string.".format(self.category)
 		assert isinstance(self.description,str), "{} description is not a string.".format(self.description)
@@ -270,7 +272,7 @@ class Types:
 					if key not in entity_types[namespace]:
 						# Check that the fields in the type yaml are allowed.
 						for field in data[key]:
-							assert field in ['is_canonical','is_abstract','implements','id','uses','opt_uses','description'], 'Type {} has invalid key {} in file {}.'.format(key,field,file)
+							assert field in ['allow_undefined_fields','is_canonical','guid','is_abstract','implements','id','uses','opt_uses','description'], 'Type {} has invalid key {} in file {}.'.format(key,field,file)
 						name = key
 						description = data[key]['description']
 						opt_fields = [(field,False) for field in data[key].get('opt_uses',[])]

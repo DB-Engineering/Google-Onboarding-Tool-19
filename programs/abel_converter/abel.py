@@ -528,8 +528,7 @@ class Abel():
         Args: 
             path: path to the export file.
         """
-        path = path.split('.')[0].replace('.xlsx', '')
-        with pd.ExcelWriter(f'{path}_abel.xlsx') as writer:
+        with pd.ExcelWriter(path) as writer:
             for key in list(self.abel.keys()):
                 pd.DataFrame(self.abel[key]).to_excel(
                     writer, sheet_name=key, index=False)

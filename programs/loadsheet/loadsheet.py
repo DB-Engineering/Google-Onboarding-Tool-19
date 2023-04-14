@@ -152,7 +152,6 @@ class Loadsheet:
 			df = pd.read_csv(filepath, header= 0)
 		std_header_map = Loadsheet._to_std_header_mapping(
 				df.columns)
-		df.columns = std_header_map.keys()
 
 		# 01132021: check to ensure that document has required headers
 		if not Loadsheet._is_valid_headers(
@@ -160,8 +159,9 @@ class Loadsheet:
 				_REQ_INPUT_HEADERS,
 				has_normalized_fields
 				):
+			header_list = [header.lower() for header in df.columns.tolist()]
 			raise RuntimeError("[ERROR] Loadsheet headers:\n {} \nDoes not match "
-				+ "configuration headers:\n {}".format(', '.join(df.columns.tolist()),', '.join(
+				+ "configuration headers:\n {}".format(', '.join(header_list),', '.join(
 		 		*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
 		 		else _REQ_INPUT_HEADERS])))
 

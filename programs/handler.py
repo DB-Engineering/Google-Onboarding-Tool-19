@@ -19,6 +19,7 @@ import ontology.ontology
 import loadsheet.loadsheet as load
 from pretty import PrettyPrint
 import base64
+from typing import Optional
 
 
 def _convert_to_base64(data):
@@ -87,6 +88,7 @@ class Handler:
         # Save some config info so that it can be reused
         self.last_loadsheet_path = ''
         self.last_rule_path = ''
+        self.payload_path = ''
 
     def build_ontology(self, ontology_root):
         """
@@ -142,6 +144,7 @@ class Handler:
                     loadsheet_path, has_normalized_fields)
                 print("[INFO]\tLoadsheet Imported")
                 self.loadsheet_built = True
+                self.last_loadsheet_path = loadsheet_path
 
             except Exception as e:
                 print("[ERROR]\tLoadsheet raised errors: {}".format(e))
@@ -273,7 +276,7 @@ class Handler:
         except Exception as e:
             print('[ERROR]\tExcel file not exported: {}'.format(e))
 
-    def export_abel_spreadsheet(self, excel_path, payload_path):
+    def export_abel_spreadsheet(self, excel_path, payload_path, output_path: Optional[str] = None):
         """converts loadsheet to ABEL spreadsheet.
 
         args:
@@ -284,7 +287,10 @@ class Handler:
         new_converter.import_loadsheet(excel_path)
         new_converter.import_payload(payload_path, format='csv')
         new_converter.build()
-        new_converter.dump(excel_path)
+        if not output_path:
+            output_path = excel_path.replace('.xlsx', '_abel.xlsx')
+        print(output_path)
+        new_converter.dump(output_path)
 
     def import_excel(self, excel_path):
         """ Import from an Excel file. """
