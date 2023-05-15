@@ -180,7 +180,8 @@ EXHAUST_FAN_RUN_COMMAND_STATES = ON_OFF_STATES | {
 
 EXHAUST_FAN_RUN_STATUS_STATES = ON_OFF_STATES | {
   "notpresent": "UNKNOWN",
-  "null": "UNKNOWN",
+  "Not Present": "UNKNOWN",
+  "null": "UNKNOWN"
 }
 
 FAN_SPEED_MODE_STATES = {
@@ -273,7 +274,11 @@ STATES_BY_SFN = {
   "circulation_pump_run_command": ON_OFF_STATES,
   "circulation_pump_run_status": ON_OFF_STATES,
   "compressor_run_command": COMPRESSOR_RUN_COMMAND_STATES,
+  "compressor_run_command_1": COMPRESSOR_RUN_COMMAND_STATES,
+  "compressor_run_command_2": COMPRESSOR_RUN_COMMAND_STATES,
   "compressor_run_status": COMPRESSOR_RUN_STATUS_STATES,
+  "compressor_run_status_1": COMPRESSOR_RUN_STATUS_STATES,
+  "compressor_run_status_2": COMPRESSOR_RUN_STATUS_STATES,
   "condensing_return_water_isolation_valve_command": OPEN_CLOSED_STATES,
   "condensing_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
   "condensing_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
@@ -338,7 +343,11 @@ STATES_BY_SFN = {
   "exhaust_air_damper_command": OPEN_CLOSED_STATES,
   "exhaust_air_damper_status": OPEN_CLOSED_STATES,
   "exhaust_fan_run_command": EXHAUST_FAN_RUN_COMMAND_STATES,
+  "exhaust_fan_run_command_1": EXHAUST_FAN_RUN_COMMAND_STATES,
+  "exhaust_fan_run_command_2": EXHAUST_FAN_RUN_COMMAND_STATES,
   "exhaust_fan_run_status": EXHAUST_FAN_RUN_STATUS_STATES,
+  "exhaust_fan_run_status_1": EXHAUST_FAN_RUN_STATUS_STATES,
+  "exhaust_fan_run_status_2": EXHAUST_FAN_RUN_STATUS_STATES,
   "fan_run_command": ON_OFF_STATES,
   "fan_run_status": ON_OFF_STATES,
   "fan_speed_mode": FAN_SPEED_MODE_STATES,
