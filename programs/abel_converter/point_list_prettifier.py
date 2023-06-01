@@ -48,8 +48,7 @@ def prettify_loadsheet(loadsheet_path):
                 df.rename(columns=colname_map, inplace=True)
 
                 df.drop(['I/O Type'], axis='columns', inplace=True)
-                df.dropna(axis='index', subset=[
-                          'Object ID'], how='any', inplace=True)
+                df = df[df['Object ID'].str.contains(":")]
                 df['objectType'] = df['Object ID'].apply(
                     lambda x: x.split(':')[0])
                 df['objectId'] = df['Object ID'].apply(
