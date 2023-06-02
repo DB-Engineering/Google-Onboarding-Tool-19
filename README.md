@@ -91,7 +91,7 @@ This repo contains a few critical pieces:
 
 7. Import and validate finished loadsheet:
 
-	`>>> import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'
+	`>>> import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'`
 	
 	`>>> validate`
 
