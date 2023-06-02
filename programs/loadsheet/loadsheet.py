@@ -121,9 +121,9 @@ class Loadsheet:
 		# 			else _REQ_INPUT_HEADERS]))
 		# # end by sypks
 		new_data = []
+		# converts camel case keys to lowercase, all fields are referenced as lowercase further (added 2023-06-01)
 		for row in data:
-			new_row = {k.lower(): v for k, v in row.items()}
-			new_data.append(new_row)
+			new_data.append({k.lower(): v for k, v in row.items()})
 		self._data = new_data
 		self._std_header_map = std_header_map
 
