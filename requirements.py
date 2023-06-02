@@ -8,6 +8,6 @@ setup(
     author_email='',
     description='',
     packages=find_packages(),
-    install_requires=['pyyaml','pyfiglet','openpyxl','pandas'],
+    install_requires=['pyyaml','pyfiglet','openpyxl','pandas', 'ruamel.yaml'],
     python_requires='>=3.6',
 )
