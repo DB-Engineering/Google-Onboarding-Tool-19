@@ -120,8 +120,11 @@ class Loadsheet:
 		# 			*[_REQ_INPUT_HEADERS+_REQ_OUTPUT_HEADERS if has_normalized_fields
 		# 			else _REQ_INPUT_HEADERS]))
 		# # end by sypks
-    
-		self._data = data
+		new_data = []
+		# converts camel case keys to lowercase, all fields are referenced as lowercase further (added 2023-06-01)
+		for row in data:
+			new_data.append({k.lower(): v for k, v in row.items()})
+		self._data = new_data
 		self._std_header_map = std_header_map
 
 	@classmethod
@@ -220,6 +223,7 @@ class Loadsheet:
 		trans_table = str.maketrans(delete_dict)
 
 		return [sh.translate(trans_table).lower() for sh in headers]
+
 
 	@staticmethod
 	def _is_valid_headers(
@@ -449,7 +453,6 @@ class Loadsheet:
 			Note - See rules/rules.py for further information
 			"""
 			r = Rules(rule_file)
-
 			for row in self._data:
 				#add output headers
 				for output_header in _REQ_OUTPUT_HEADERS:
