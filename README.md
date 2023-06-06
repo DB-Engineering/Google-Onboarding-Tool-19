@@ -24,8 +24,7 @@ This repo requires a few libraries be installed prior to use:
 2. pyfiglet (for fancy CLI name)
 3. openpyxl (for Excel read/write)
 4. pandas (for loadsheet backend)
-5. typing (for type checking)
-6. ruamel.yaml
+5. ruamel.yaml
 
 If not installed, setup libraries by running `setup.py` in your command line:
 
@@ -125,7 +124,7 @@ If not installed, setup libraries by running `setup.py` in your command line:
 	`>>> convert abel ./path/to/building/payload.csv`
 
 
-## Known Deficiencies and Future Development
+## Known deficiencies and future development
 
 The following is a list of issues that need to be addressed before widespread use:
 	- Add rigorous typing to all methods
