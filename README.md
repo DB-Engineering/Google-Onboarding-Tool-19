@@ -1,14 +1,13 @@
 
 # Onboarding Automation Tools
 This repository hosts a set of libraries and command line tool for automating parts of the onboarding workflow.
-It gives the user the ability to apply rule-based mapping automation, ingestion of multiple source files,
+It gives the user the ability to apply rule-based mapping automation, ingest multiple source files,
 review loadsheet consistency, and validate entity definitions against a pre-defined ontology (i.e.,
-Google's Digital Buildings Ontology).
+Google's [Digital Buildings Ontology](https://github.com/google/digitalbuildings).
 
 ## Repo Overview
 
-This repo contains a few critical pieces:
-
+This repo contains the following critical pieces:
 1. A well defined ontology (`./ontology`)
 2. A command line interface for dynamically building and checking loadsheets (`./programs/cli.py`)
 3. Associated support libraries for the command line interface (and for future enhancement):
@@ -127,5 +126,6 @@ If not installed, setup libraries by running `setup.py` in your command line:
 ## Known deficiencies and future development
 
 The following is a list of issues that need to be addressed before widespread use:
-	- Add rigorous typing to all methods
-	- make the necessary fields in handler and representations private
+* Add rigorous typing to all methods
+* Make the necessary fields in `handler.py` and `representations.py` private
+* Increase the match success rate of the rules JSON (and potentially provide tooling or templates for users to create their own ruleset)
