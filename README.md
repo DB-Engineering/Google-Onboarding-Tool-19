@@ -3,7 +3,7 @@
 This repository hosts a set of libraries and command line tool for automating parts of the onboarding workflow.
 It gives the user the ability to apply rule-based mapping automation, ingest multiple source files,
 review loadsheet consistency, and validate entity definitions against a pre-defined ontology (i.e.,
-Google's [Digital Buildings Ontology](https://github.com/google/digitalbuildings).
+Google's [Digital Buildings Ontology](https://github.com/google/digitalbuildings)).
 
 ## Repo Overview
 
