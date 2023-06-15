@@ -18,17 +18,16 @@ This repo contains the following critical pieces:
 	5. A representations class set for converting the loadsheet into ontology-usable objects
 
 ### Dependencies
-This repo requires a few libraries be installed prior to use:
+This repo requires the following libraries to be installed prior to use:
 1. pyyaml (for parsing YAML documents)
 2. pyfiglet (for fancy CLI name)
 3. openpyxl (for Excel read/write)
 4. pandas (for loadsheet backend)
 5. ruamel.yaml
 
-If not installed, setup libraries by running `setup.py` in your command line:
+If not already installed, you can install the libraries by running `requirements.py` in your command line:
 
 ```>>> python requirements.py```
-
 
 ## Example Workflow
 **Start the Commmand Line Interface (LoadBoy2000):**
@@ -37,8 +36,8 @@ If not installed, setup libraries by running `setup.py` in your command line:
 
 **Loadsheet process:**
 1. Prepare the loadsheet
-	1. Get point list (in XSLX or CSV format)
-	2. Put it in the loadsheet template sheet
+	1. Obtain a point list (in XSLX or CSV format)
+	2. Format the point list to adhere to the loadsheet template sheet
 	3. Run the RULE ENGINE over the data
 	4. Manually review the unmapped points
 	
