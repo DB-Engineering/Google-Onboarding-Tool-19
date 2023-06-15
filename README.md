@@ -28,7 +28,7 @@ This repo requires a few libraries be installed prior to use:
 
 If not installed, setup libraries by running `setup.py` in your command line:
 
-```>>> python setup.py```
+```>>> python requirements.py```
 
 
 ## Example Workflow
