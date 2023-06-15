@@ -38,10 +38,10 @@ If not installed, setup libraries by running `setup.py` in your command line:
 
 **Loadsheet process:**
 1. Prepare the loadsheet
-	a. Get point list (in XSLX or CSV format)
-	b. Put it in the loadsheet template sheet
-	c. Run the RULE ENGINE over the data
-	d. Manually review the unmapped points
+	1. Get point list (in XSLX or CSV format)
+	2. Put it in the loadsheet template sheet
+	3. Run the RULE ENGINE over the data
+	4. Manually review the unmapped points
 	
 2. Validate the loadsheet
 3. Match to existing DBO types
