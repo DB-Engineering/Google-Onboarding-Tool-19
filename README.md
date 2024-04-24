@@ -5,6 +5,14 @@ It gives the user the ability to apply rule-based mapping automation, ingest mul
 review loadsheet consistency, and validate entity definitions against a pre-defined ontology (i.e.,
 Google's [Digital Buildings Ontology](https://github.com/google/digitalbuildings)).
 
+## Table of Contents
+- [Repo Overview](#repo-overview)
+- [Dependencies](#dependencies)
+- [Workflow](#workflow)
+    - [Detailed Workflow](#detailed-workflow)
+- [Known Deficiencies and Future Development](#known-deficiencies-and-future-development)
+- [Optional Unit Tests](#optional-unit-tests)
+
 ## Repo Overview
 
 This repo contains the following critical pieces:
@@ -29,102 +37,144 @@ If not already installed, you can install the libraries by running `requirements
 
 ```>>> python requirements.py```
 
-## Example Workflow
-**Start the Commmand Line Interface (LoadBoy2000):**
-1. Run the progam:
-	`>>> python cli.py`
-
-**Loadsheet process:**
+## Workflow
+**General Loadsheet Process**
 1. Prepare the loadsheet
 	1. Obtain a point list (in XSLX or CSV format)
 	2. Format the point list to adhere to the loadsheet template sheet
-	3. Run the RULE ENGINE over the data
+	3. Run the rule engine over the data
 	4. Manually review the unmapped points
-	
 2. Validate the loadsheet
-3. Match to existing DBO types
-4. Create new types, as needed
-5. Apply types to the loadsheet
+3. Match the entities in the loadsheet to existing DBO types
+4. Create new types in the referenced ontology, as needed
+5. Apply matched DBO types to the loadsheet
 
-**Example workflow:**
-1. Import the ontology:
+### Detailed Workflow
+#### Step 1 - Start the Commmand Line Interface (LoadBoy2000)
+From your command prompt (or euivalent console) run the progam (note that `python` is used here, but your local machine may use `py`, `py3`, or `python3`).
 
-	`>>> import ontology '../ontology/yaml/resources'`
-	If successful, you should get CLI confirmation.
+```
+python cli.py
+```
 
-	Manual (optional) unit tests:
-	- Add a fake field to the field list ('bacon_sensor') -- should return error
-	- Add a fake field with valid subfields ('supply_sensor') -- will NOT return an error.
-	- Add a new type with a fake field -- should return error
-	- Add duplicate fields to fake type -- should return error
+#### Step 2 - Import the ontology
+Once the LoadBoy2000 program starts, pass in a path (absolute or relative) to the ontology that the program will reference during validation and type matching. If successful, you should get CLI confirmation.
 
-2. Clean raw loadsheet:
+```
+import ontology '../ontology/yaml/resources'
+````
 
-	`>>> clean '../loadsheet/Loadsheet_ALC.xlsx'`
+#### [Optional] Step 3 - Clean the "raw" loadsheet
+This step is only required if you are passing in a raw points list (directly exported from an ALC BMS).
+```
+clean '../loadsheet/Loadsheet_ALC.xlsx'
+```
 
-3. Import the cleaned loadsheet:
+#### Step 4 - Import the loadsheet (either the "clean" output from Step 3 or a previously "cleaned" loadsheet)
+Load the loadsheet that you want to validate, normalized, and type match. If successful, you should get CLI confirmation.
+```
+import loadsheet '../loadsheet/Loadsheet_ALC.xlsx'
+```
 
-	`>>> import loadsheet '../loadsheet/Loadsheet_ALC.xlsx'`
+
+#### Step 5 - Normalize the loadsheet (AKA apply the ruleset):
+Apply reular expression rules to populate the standardFieldName column. The default ruleset uses DBO field names. If successful, you should get CLI confirmation.
+
+```
+normalize '../resources/rules/google_rules.json'
+```
 	
-	If successful, you should get CLI confirmation.
 
-4. Normalize the loadsheet (AKA apply the ruleset):
+#### Step 6 - Export to a NEW loadsheet for review
+Once rules are successfully applied, you should see a new file with normalized columns (e.g., `required`, `assetName`, and `standardFieldName`) filled in. 
 
-	`>>> normalize '../resources/rules/google_rules.json'`
-	
-	If successful, you should get CLI confirmation.
-
-5. Export to a new loadsheet for review:
-
-	`>>> export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'`
-
-	Rules should have been applied. You should see a new file with normalized columns (e.g., `required`, `assetName`, and `standardFieldName`) filled in. 
-
-6. Perform a manual review and repeat steps 3, 4, and 5 as necessary.
-
-7. Import and validate finished loadsheet:
-
-	`>>> import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'`
-	
-	`>>> validate`
-
-	Validation will fail for common errors:
-	- duplicate `standardFieldName` and `fullAssetPath` combinations
-	- an invalid `standardFieldName` (i.e., not defined in the referenced ontology or mispelled)
-	- missing bacnet info (e.g., missing `objectId`)
-
-8. When no validation errors are present, assets in the loadsheet can be matched to DBO entity types:
-
-	`>>> match`
-
-9. Perform a review of type matches and assign to a valid canonical type.
-
-	`>>> review generalTypes`
-	`>>> review generalTypes VAV`
-	`>>> review generalTypes VAV 1`
-
-	or
-
-	`>>> review matches`
+```
+export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'
+```
 
 
-10. Apply the matched types
-	Either review all matches made using
+#### Step 7 - Perform a manual review and repeat steps 3, 4, and 5 as necessary.
+Perform a manual review to ensure that the applied standardFieldNames are correct. Correct any incorrect field names, remove any field names that are not relevant to the model (e.g., PID inputs) by marking the `reqired` column as "NO", and add any field names that were not populated but are relevant to the model by marking the `required` column as "YES".
 
-	`>>> apply all`
+#### Step 8 - Import and validate the loadsheet
+Import the loadsheet (after manual review from Step 7) that has the standardFieldName column populated for fields of interest.
+```
+import loadsheet '../loadsheet/Loadsheet_ALC_Final.xlsx'
+```
 
-	Or Autoapply exact matches and only review inexact using
+Run validation over the loadsheet
+```
+validate
+```
 
-	`>>> apply close`
+Validation will fail for common errors:
+- Duplicate `standardFieldName` and `fullAssetPath` combinations (i.e., two `zone_air_temperature_sensor` fields for VAV-123)
+- An invalid `standardFieldName` (i.e., not defined in the referenced ontology, mispelled, etc.)
+- Missing BACnet info in the columns (e.g., blank `objectId`)
 
-11. Convert normalized loadsheet to ABEL spreadsheet:
+#### Step 9 - Type match to the ontology
+When no validation errors are present, assets in the loadsheet can be matched to DBO entity types. Matching attempts to find the closest canonical type in the DBO that has the same fieldset as the asset in the loadsheet.
+```
+match
+```
 
-	`>>> convert abel ./path/to/building/payload.csv`
+#### Step 10 - Perform a review of type matches and assign to a valid canonical type.
+You can review all DBO general types found in the loadsheet (i.e., AHU, VAV, FCU, etc.)
+```
+review generalTypes
+```
+
+Or, you can review specific DBO general types found in the loadsheet
+```
+review generalTypes VAV
+```
+
+Or, you can review sub-sets (distinct field sets) of general types found in the loadsheet
+```
+review generalTypes VAV 1
+```
+
+Or, you can review matched types (i.e., the field set in the loadsheet matched to a DBO type
+TODO: verify this is the behavior of this command
+```
+review matches
+```
 
 
-## Known deficiencies and future development
+#### Step 11 - Apply the matched types
+TODO: explain match types in detail
+1. You can review all matches (close, incomplete, and exact) using `apply all`
+```
+apply all
+```
+
+2. OR you can auto-apply "exact" matches and only review inexact (close and imcomplete) using `apply close`
+```
+apply close
+```
+
+#### Step 12 - Export the loadsheet with applied matches
+TODO: write this section
+
+#### Step 13 - Convert normalized loadsheet to ABEL spreadsheet:
+TODO: write more here, this command requires additional input of the raw deiscovery results
+```
+convert abel ./path/to/building/payload.csv
+```
+
+
+## Known Deficiencies and Future Development
 
 The following is a list of issues that need to be addressed before widespread use:
 * Add rigorous typing to all methods
 * Make the necessary fields in `handler.py` and `representations.py` private
 * Increase the match success rate of the rules JSON (and potentially provide tooling or templates for users to create their own ruleset)
+* Expand to type match to more domains (currently only HVAC)
+
+## Optional Unit Tests
+### Ontology validation tests
+Manual (optional) unit tests:
+- Add a fake field with invalid subfields `bacon_sensor` to the ontology field list (../resources/fields/telemetry_fields.yaml) -- should return error
+- Add a fake field with valid subfields `supply_sensor` to the ontology field list (../resources/fields/telemetry_fields.yaml) -- will NOT return an error.
+- Add a new abstract type with a fake field -- should return error
+- Add duplicate fields to fake abstract type -- should return error
