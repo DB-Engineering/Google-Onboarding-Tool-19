@@ -159,9 +159,10 @@ TODO: write this section
 #### Step 13 - Convert normalized loadsheet to ABEL spreadsheet:
 TODO: write more here, this command requires additional input of the raw deiscovery results
 ```
-convert abel ./path/to/building/payload.csv
+import payload 'path/to/payload.csv'
+convert abel
 ```
-
+The ABEL formatted spreadsheet will be exported to the same directory as the loadsheet with suffix "_abel".
 
 ## Known Deficiencies and Future Development
 
