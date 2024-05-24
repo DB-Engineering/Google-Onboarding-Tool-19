@@ -1,14 +1,13 @@
 
 # Onboarding Automation Tools
 This repository hosts a set of libraries and command line tool for automating parts of the onboarding workflow.
-It gives the user the ability to apply rule-based mapping automation, ingestion of multiple source files,
+It gives the user the ability to apply rule-based mapping automation, ingest multiple source files,
 review loadsheet consistency, and validate entity definitions against a pre-defined ontology (i.e.,
-Google's Digital Buildings Ontology).
+Google's [Digital Buildings Ontology](https://github.com/google/digitalbuildings)).
 
 ## Repo Overview
 
-This repo contains a few critical pieces:
-
+This repo contains the following critical pieces:
 1. A well defined ontology (`./ontology`)
 2. A command line interface for dynamically building and checking loadsheets (`./programs/cli.py`)
 3. Associated support libraries for the command line interface (and for future enhancement):
@@ -19,17 +18,16 @@ This repo contains a few critical pieces:
 	5. A representations class set for converting the loadsheet into ontology-usable objects
 
 ### Dependencies
-This repo requires a few libraries be installed prior to use:
+This repo requires the following libraries to be installed prior to use:
 1. pyyaml (for parsing YAML documents)
 2. pyfiglet (for fancy CLI name)
 3. openpyxl (for Excel read/write)
 4. pandas (for loadsheet backend)
 5. ruamel.yaml
 
-If not installed, setup libraries by running `setup.py` in your command line:
+If not already installed, you can install the libraries by running `requirements.py` in your command line:
 
-```>>> python setup.py```
-
+```>>> python requirements.py```
 
 ## Example Workflow
 **Start the Commmand Line Interface (LoadBoy2000):**
@@ -38,10 +36,10 @@ If not installed, setup libraries by running `setup.py` in your command line:
 
 **Loadsheet process:**
 1. Prepare the loadsheet
-	a. Get point list (in XSLX or CSV format)
-	b. Put it in the loadsheet template sheet
-	c. Run the RULE ENGINE over the data
-	d. Manually review the unmapped points
+	1. Obtain a point list (in XSLX or CSV format)
+	2. Format the point list to adhere to the loadsheet template sheet
+	3. Run the RULE ENGINE over the data
+	4. Manually review the unmapped points
 	
 2. Validate the loadsheet
 3. Match to existing DBO types
@@ -127,5 +125,6 @@ If not installed, setup libraries by running `setup.py` in your command line:
 ## Known deficiencies and future development
 
 The following is a list of issues that need to be addressed before widespread use:
-	- Add rigorous typing to all methods
-	- make the necessary fields in handler and representations private
+* Add rigorous typing to all methods
+* Make the necessary fields in `handler.py` and `representations.py` private
+* Increase the match success rate of the rules JSON (and potentially provide tooling or templates for users to create their own ruleset)
