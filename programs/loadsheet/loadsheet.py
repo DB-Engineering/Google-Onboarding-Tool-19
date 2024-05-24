@@ -282,7 +282,7 @@ class Loadsheet:
 			output_filepath - location and name of excel file output
 		"""
 		df = pd.DataFrame.from_records(self._data)
-		df.columns = [self._std_header_map[c] for c in df.columns]
+		# df.columns = [self._std_header_map[c] for c in df.columns]
 		df.to_excel(output_filepath, index=False)
 
 	def validate(
