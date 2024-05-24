@@ -14,7 +14,6 @@
 
 import numpy as np
 import pandas as pd
-import value_mapping
 import ruamel.yaml as yaml
 import json
 import uuid

@@ -285,7 +285,7 @@ class Handler:
         """
         new_converter = abel.Abel()
         new_converter.import_loadsheet(excel_path)
-        new_converter.import_payload(payload_path, format='csv')
+        new_converter.import_payload(payload_path)
         new_converter.build()
         if not output_path:
             output_path = excel_path.replace('.xlsx', '_abel.xlsx')
