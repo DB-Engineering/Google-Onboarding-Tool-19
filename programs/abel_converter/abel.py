@@ -70,7 +70,8 @@ class Abel():
             'Log': {
                 'Index': None,
                 'Issue': None
-            }
+            },
+            'BMS Incorrect Units': None
         }
 
         self.site_code = None
@@ -109,17 +110,24 @@ class Abel():
         entity_fields = entity_fields.loc[entity_fields['required']=='YES'].reset_index(drop=True)
         self.abel['Loadsheet'] = entity_fields.to_dict()
         
-        # entity_fields['rawUnitValue'] = entity_fields['units'] # upd 6/27: must be raw value from payload
-        entity_fields['units'] = entity_fields['units'].str.replace('-', '_')
+        # Fill in blank deviceId and objectId for isMissing=YES
+        entity_fields['deviceId'] = entity_fields.groupby('fullAssetPath')['deviceId'].ffill()
+        entity_fields['deviceId'] = entity_fields.groupby('fullAssetPath')['deviceId'].bfill()
+        entity_fields.loc[(entity_fields['isMissing']=="YES") & (entity_fields['objectType'].isna()==True), 'objectType'] = 'FV'
+        mask = entity_fields['isMissing']=="YES"
+        entity_fields.loc[mask, 'objectId'] = np.random.randint(10000, 11000, size=mask.sum())
+
+        entity_fields['rawUnitValue'] = entity_fields['units'].str.replace('_', '-')
+        entity_fields['units'] = entity_fields['standardFieldName'].apply(value_mapping.map_units).str.replace('-', '_')
         entity_fields['objectId'] = entity_fields['objectId'].astype(int)
         entity_fields['extendedObjectType'] = entity_fields['objectType'].map(OBJECT_ID_MAPPING)
         entity_fields['rawFieldName'] = 'data.' + entity_fields['extendedObjectType'] + '_' + entity_fields['objectId'].astype('str') + '.present-value'
         entity_fields['rawUnitPath'] = 'data.' + entity_fields['extendedObjectType'] + '_' + entity_fields['objectId'].astype('str') + '.units'
-        entity_fields['Missing'] = entity_fields.apply(lambda x: 'TRUE' if x['path'] in value_mapping.MISSING_FILL else 'FALSE', axis=1)
+        entity_fields['Missing'] = entity_fields.apply(lambda x: 'TRUE' if x['isMissing'] == "YES" else "FALSE", axis=1)
 
         entity_fields.loc[entity_fields['Missing']=='TRUE', ['rawFieldName', 'rawUnitPath', 'units']] = np.nan # leave fields blank for missing points
 
-        self.entity_fields_data = entity_fields[['path', 'deviceId', 'objectType', 'objectId', 'objectName', 'units', 
+        self.entity_fields_data = entity_fields[['path', 'deviceId', 'controlProgram', 'objectType', 'objectId', 'objectName', 'units', 
                                                'typeName', 'assetName', 'fullAssetPath', 'standardFieldName', 'Missing',
                                                'extendedObjectType', 'rawFieldName', 'rawUnitPath']]
 
@@ -242,6 +250,7 @@ class Abel():
             return [('active', active), ('inactive', inactive)] if all([active, inactive]) else multi_enum
 
         payload_data = pd.read_csv(path, dtype={'externalId':'str'})
+        payload_data.dropna(how='any', inplace=True)
         payload_data.loc[payload_data['entity_code'].isna()==False, 'code'] = 'EMPTY CODE: PLACEHOLDER'
 
         self.site_code = payload_data.loc[0, 'building']
@@ -370,16 +379,14 @@ class Abel():
         # Raw Unit Path, DBO Standard Unit Value, Raw Unit Value must be blank for binary and multi-state fields
         self.entity_fields_data.loc[(self.entity_fields_data['rawFieldName'].str.contains('binary')==True) 
                                     | (self.entity_fields_data['rawFieldName'].str.contains('multi-state')==True), ['rawUnitPath', 'rawUnitValue', 'units']] = ''
-
+        
+        # Check if raw BMS units match the standard units and flag the mismatching ones for manual review
+        self.entity_fields_data['unitsCheck'] = ''
+        self.entity_fields_data.loc[(self.entity_fields_data['units'].str.replace("_", "-") != self.entity_fields_data['rawUnitValue'].str.replace("_", "-")) & 
+                                    (self.entity_fields_data['Missing']=='FALSE'), 
+                                    'unitsCheck'] = 'ERROR'
 
         #### ADD AND MAP STATES DATA
-        def map_states(field_name, raw_state, mapper):
-            try:
-                return_value = mapper[field_name][raw_state[1].lower().strip()] # raw_state is a tuple, we need value at index 1
-            except Exception: 
-                return_value = np.nan 
-            return(return_value)
-
         states = self.entity_fields_data.loc[(self.entity_fields_data['Missing']=='FALSE')]   # filter out missing points
         states = states.loc[(states['rawFieldName'].str.contains('binary')==True) 
                                     | (self.entity_fields_data['rawFieldName'].str.contains('multi-state')==True)]\
@@ -387,12 +394,19 @@ class Abel():
         states = states.explode('state').sort_values(['reportingEntityCode', 'reportingEntityField', 'state']).drop_duplicates()                   # flatten states
         states['rawStateValue'] = states.state.apply(lambda x: x[1] if isinstance(x, tuple) else x)
         states['rawState'] = states.state.apply(lambda x: x[0] if isinstance(x, tuple) else x)
-        states['dboStandardState'] = states.apply(lambda x: map_states(x['standardFieldName'], x['state'], value_mapping.STATES_BY_SFN), axis=1)   # map raw states to dbo standard states
+        states['dboStandardState'] = states.apply(lambda x: value_mapping.map_states(x['standardFieldName'], x['state']), axis=1)   # map raw states to dbo standard states
 
         self.states_data = states[['reportingEntityCode', 'reportingEntityGuid', 'reportingEntityField', 'dboStandardState', 'rawState', 'rawStateValue']]
 
         # Clear Reporting Entity Field for Reporting Entities that are not linked to any Virtual Entities (otherwise validation fails)
         self.entity_fields_data.loc[self.entity_fields_data['entityGuid'].isna()==True, 'reportingEntityField'] = np.nan
+
+        incorrect_units = self.entity_fields_data.loc[self.entity_fields_data['unitsCheck']=='ERROR', 
+                                                      ['deviceId', 'controlProgram', 'objectType', 'objectId', 'objectName', 'standardFieldName','units', 'rawUnitValue']].drop_duplicates()
+        self.abel['BMS Incorrect Units'] = incorrect_units.to_dict()
+
+        # Replace incorrect units with correct ones
+        self.entity_fields_data['rawUnitValue'] = self.entity_fields_data.apply(lambda x: x['units'].replace("_", "-") if (type(x['units'])==str and x['units']!=x['rawUnitValue']) else x['rawUnitValue'], axis=1)
 
         self.PAYLOAD_IMPORTED = True
 
@@ -417,8 +431,7 @@ class Abel():
             path: path to the export file.
 
         """
-        path = path.replace('.xlsx', '')
-        with pd.ExcelWriter(f'{path}_abel.xlsx') as writer:
+        with pd.ExcelWriter(path) as writer:
             for key in list(self.abel.keys()):
                 pd.DataFrame(self.abel[key]).to_excel(writer, sheet_name=key, index=False, engine='xlsxwriter')
 
@@ -453,6 +466,7 @@ class Abel():
         self.abel['Entity Fields']['Missing'] = self.entity_fields_data['Missing'].to_list()
         self.abel['Entity Fields']['Raw Field Name'] = self.entity_fields_data['rawFieldName'].to_list()
         self.abel['Entity Fields']['Raw Unit Path'] = self.entity_fields_data['rawUnitPath'].to_list() 
+        self.abel['Entity Fields']['Units Check'] = self.entity_fields_data['unitsCheck'].to_list() 
         self.abel['Entity Fields']['DBO Standard Unit Value'] = self.entity_fields_data['units'].to_list()
         self.abel['Entity Fields']['Raw Unit Value'] = self.entity_fields_data['rawUnitValue'].tolist()
 

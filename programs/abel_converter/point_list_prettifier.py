@@ -61,6 +61,7 @@ def prettify_loadsheet(loadsheet_path):
                 df['generalType'] = np.nan
                 df['units'] = np.nan
                 df['required'] = np.nan
+                df['isMissing'] = np.nan
                 df['typeName'] = np.nan
                 df['assetName'] = np.nan
                 df['fullAssetPath'] = np.nan
@@ -68,7 +69,7 @@ def prettify_loadsheet(loadsheet_path):
 
                 # reordering columns
                 df = df[['location', 'controlProgram', 'name', 'type', 'path', 'deviceId', 'objectType', 'objectId',
-                        'objectName', 'units', 'required', 'manuallyMapped', 'building', 'generalType', 'typeName',
+                        'objectName', 'units', 'required', 'isMissing', 'manuallyMapped', 'building', 'generalType', 'typeName',
                         'assetName', 'fullAssetPath', 'standardFieldName']]
                 export_path = re.sub('(.xlsx)?(.csv)?', '', loadsheet_path)
                 df.to_excel(f'{export_path}_pretty.xlsx', index=False)

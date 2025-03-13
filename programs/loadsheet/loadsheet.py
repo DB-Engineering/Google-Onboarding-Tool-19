@@ -329,7 +329,8 @@ class Loadsheet:
 					'deviceid',
 					'objecttype',
 					'objectid',
-					'units'
+					'units',
+					'ismissing'
 					]
 
 		# convert self._data to pd.DataFrame (we will transistion to
@@ -374,7 +375,8 @@ class Loadsheet:
 						'deviceid',
 						'objecttype',
 						'objectid',
-						'units'
+						'units', 
+						'ismissing'
 						]
 
 			# convert self._data to pd.DataFrame (we will transistion to
@@ -419,7 +421,7 @@ class Loadsheet:
 		needed_columns = ['required']
 		needed_columns.extend(non_null_fields)
 		relevant_df = data[needed_columns]
-		relevant_df = relevant_df[relevant_df['required'] == 'YES']
+		relevant_df = relevant_df[(relevant_df['required'] == 'YES') & (relevant_df['ismissing'] == 'NO')]
 		null_data = relevant_df[relevant_df.isnull().any(axis=1)]
 		return null_data.index.tolist()
 
