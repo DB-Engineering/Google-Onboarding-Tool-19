@@ -1,425 +1,82 @@
-# for adding new fields refer to: https://source.corp.google.com/piper///depot/google3/java/com/google/corp/bizapps/rews/phred/tools/devicesonsheetsimporter/utils/models/States.java
-
-MISSING_FILL = ['MISSING', 'X', 'x']
-
-OPEN_CLOSED_STATES = {
-  "close": "CLOSED",
-  "closed": "CLOSED",
-  "disable": "CLOSED",
-  "disabled": "CLOSED",
-  "enable": "OPEN",
-  "enabled": "OPEN",
-  "is": "OPEN",
-  "isnot": "CLOSED",
-  "no": "CLOSED",
-  "notopen": "CLOSED",
-  "off": "CLOSED",
-  "on": "OPEN",
-  "open": "OPEN",
-  "opened": "OPEN",
-  "shut": "CLOSED",
-  "yes": "OPEN"
-}
-
-ON_OFF_STATES = {
-  "close": "OFF",
-  "closed": "OFF",
-  "disable": "OFF",
-  "disabled": "OFF",
-  "donotrun": "OFF",
-  "enable": "ON",
-  "enabled": "ON",
-  "high": "ON",
-  "is": "ON",
-  "isdisabled": "OFF",
-  "isenabled": "ON",
-  "isnot": "OFF",
-  "med": "ON",
-  "no": "OFF",
-  "notrunning": "OFF",
-  "off": "OFF",
-  "on": "ON",
-  "open": "ON",
-  "opened": "ON",
-  "operating": "ON",
-  "run": "ON",
-  "running": "ON",
-  "shut": "OFF",
-  "start": "ON",
-  "stop": "OFF",
-  "stopped": "OFF",
-  "yes": "ON"
-}
-
-ACTIVE_INACTIVE_STATUS = {
-  "active": "ACTIVE",
-  "inactive": "INACTIVE",
-  "on": "ACTIVE",
-  "off": "INACTIVE",
-  "alarm": "ACTIVE",
-  "normal": "INACTIVE",
-}
-
-OCCUPIED_UNOCCUPIED_STATES = {
-          "occupied": "OCCUPIED",
-          "unoccupied": "UNOCCUPIED"}
-
-CALENDAR_SYNC_STATUS = {
-  "acccessfailed": "ACCESS_FAILED",
-  "calendarstartup": "CALENDAR_STARTUP",
-  "calendarsuccess": "CALENDAR_SUCCESS",
-  "subscriptionfailed": "SUBSCRIPTION_FAILED",
-  "waitingforresponse": "WAITING_FOR_RESPONSE",
-}
-
-COMPRESSOR_RUN_COMMAND_STATES = ON_OFF_STATES | {
-  "arm": "UNKNOWN",
-  "auto": "AUTO",
-  "cool": "COOLING",
-  "countinganticycle": "ON",
-  "dry": "DRY",
-  "fan": "FAN",
-  "heat": "HEATING",
-  "notpresent": "UNKNOWN",
-  "offamb": "OFF",
-  "offalarm": "OFF",
-  "offnet": "OFF",
-  "offman": "OFF",
-  "none": "OFF",
-  "smart": "UNKNOWN",
-  "": "UNASSIGNED",
-}
-
-COMPRESSOR_RUN_STATUS_STATES = ON_OFF_STATES | {
-  "auto": "AUTO",
-  "cool": "COOLING",
-  "countinganticycle": "UNKNOWN",
-  "compressoroff": "OFF",
-  "dry": "DRY",
-  "fan": "FAN",
-  "heat": "HEATING",
-  "pumpoffrequest": "PUMP_OFF_REQUEST",
-  "pumponrequest": "PUMP_ON_REQUEST",
-  "none": "OFF",
-  "notpresent": "UNKNOWN",
-  "null": "UNKNOWN",
-  "offalarm": "OFF",
-  "offbyalarm": "OFF",
-  "offbycondflow": "OFF",
-  "offbyevapflow": "OFF",
-  "offbyminoff": "OFF",
-  "offbyswitch": "OFF",
-  "offamb": "OFF",
-  "offman": "OFF",
-  "offnet": "OFF",
-  "onbyminon": "ON",
-  "onbypumpdown": "ON",
-  "ready": "UNKNOWN",
-  "": "UNASSIGNED"
-}
-
-DISABLED_ENABLED_STATES = {
-  "bmscontrol": "DISABLED",
-  "disabled": "DISABLED",
-  "enabled": "ENABLED",
-  "mlcontrol": "ENABLED",
-  "no": "DISABLED",
-  "off": "DISABLED",
-  "on": "ENABLED",
-  "yes": "ENABLED"}
-
-DISCHARGE_FAN_RUN_COMMAND_STATES = ON_OFF_STATES | {
-  "auto": "AUTO",
-  "occupied": "OCCUPIED",
-  "smart": "UNKNOWN",
-  "unitison": "ON",
-  "unitisoff": "OFF",
-  "unoccupied": "UNOCCUPIED",
-}
-
-DISCHARGE_FAN_SPEED_MODE_STATES = {
-  "low": "LOW",
-  "lowspeed": "LOW",
-  "high": "HIGH",
-  "highspeed": "HIGH",
-  "turbo": "HIGH",
-  "medium": "MEDIUM",
-  "middle": "MEDIUM",
-  "mediumspeed": "MEDIUM",
-  "mid": "MEDIUM",
-  "mid1": "MEDIUM",
-  "mid2": "MEDIUM",
-  "auto": "AUTO",
-  "autona": "AUTO",
-  "off": "OFF",
-  "stop": "OFF",
-  'reserved': "OFF"
-}
-
-ECONOMIZER_MODE_STATES = ON_OFF_STATES | {
-  "alarm": "ON",
-  "allowed": "ON",
-  "auto": "AUTO",
-  "normal": "OFF",
-  "economizerenabled": "ON",
-  "economizerdisabled": "OFF",
-  "econenabled": "ON",
-  "econdisabled": "OFF",
-  "economizerisdisabled": "OFF",
-  "economizerisenabled": "ON",
-}
-
-EXHAUST_FAN_RUN_COMMAND_STATES = ON_OFF_STATES | {
-  "manualoff": "OFF",
-  "manualon": "ON",
-  "nighttimesetback": "UNOCCUPIED",
-  "occupiedon": "ON",
-  "optimalstop": "OPTIMAL_STOP",
-  "unoccupiedoff": "OFF",
-}
-
-EXHAUST_FAN_RUN_STATUS_STATES = ON_OFF_STATES | {
-  "notpresent": "UNKNOWN",
-  "Not Present": "UNKNOWN",
-  "null": "UNKNOWN"
-}
-
-FAN_SPEED_MODE_STATES = {
-  "off": "OFF",
-  "low": "LOW",
-  "high": "HIGH",
-}
-HEATER_RUN_COMMAND_STATES = ON_OFF_STATES | {  "htgenable": "ON",
-  "htgdisable": "OFF",
-  "none": "OFF",
-  "notpresent": "UNKNOWN",
-  "offamb": "OFF",
-  "offalarmnotused": "OFF",
-  "offman": "OFF",
-  "offnet": "OFF",
-}
-REVERSING_VALVE_COMMAND_STATES = {
-  # OPEN_CLOSED_STATES,
-  "auto": "AUTO",
-  "automode": "AUTO",
-  "cool": "CLOSED",
-  "cooling": "CLOSED",
-  "coolingmode": "CLOSED",
-  "dry": "UNKNOWN",
-  "drymode": "UNKNOWN",
-  "fan": "UNKNOWN",
-  "fanmode": "UNKNOWN",
-  "heat": "OPEN",
-  "heating": "OPEN",
-  "heatingmode": "OPEN",
-}
-RUN_COMMAND_STATES = ON_OFF_STATES | {
-          "occupied": "ON",
-          "0n": "ON",
-          "unoccupied": "OFF",
-          }
-RUN_MODE_STATES = ON_OFF_STATES | {
-  "auto": "AUTO",
-  "cool": "COOLING",
-  "coolingdominant": "COOLING",
-  "directgeoexchangec": "COOLING",
-  "idle": "OFF",
-  "groundrecharge": "COOLING",
-  "heat": "HEATING",
-  "heatingdominant": "HEATING",
-}
-RUN_STATUS_STATES = ON_OFF_STATES | {
-  "calledbutnotrunni": "OFF",
-  "failed": "OFF",
-  "flame": "ON",
-  "firemode": "ON",
-  "alarm": "ON",
-  "normal": "OFF",
-  "noflame": "OFF",
-  "coolingactive": "ON",
-  "coolingnotactive": "OFF",
-  "flow": "ON",
-  "noflow": "OFF",
-  "outofservice": "OFF",
-}
-SUPPLY_FAN_RUN_COMMAND_STATES = ON_OFF_STATES | {
-  "occupied": "ON",
-  "unoccupied": "OFF",
-}
-SUPPLY_FAN_RUN_STATUS_STATES = ON_OFF_STATES | {
-  "occupied": "ON",
-  "notpresent": "UNKNOWN",
-}
-
-DOES_NOT_MATCH_MATCH_STATUS = {
-          "doesnotmatch": "DOES_NOT_MATCH",
-          "match": "MATCH"}
-
-STATES_BY_SFN = {
-  "boost_fan_run_command": ON_OFF_STATES,
-  "boost_fan_run_status": ON_OFF_STATES,
-  "calendar_sync_status": CALENDAR_SYNC_STATUS,
-  "chilled_return_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "chilled_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_side_ground_return_economizer_isolation_valve_command": OPEN_CLOSED_STATES,
-  "chilled_side_ground_return_economizer_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_side_ground_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_side_ground_supply_economizer_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_side_ground_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "chilled_side_ground_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "chilled_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "chilled_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "chilled_water_valve_command": OPEN_CLOSED_STATES,
-  "circulation_pump_run_command": ON_OFF_STATES,
-  "circulation_pump_run_status": ON_OFF_STATES,
-  "compressor_run_command": COMPRESSOR_RUN_COMMAND_STATES,
-  "compressor_run_command_1": COMPRESSOR_RUN_COMMAND_STATES,
-  "compressor_run_command_2": COMPRESSOR_RUN_COMMAND_STATES,
-  "compressor_run_status": COMPRESSOR_RUN_STATUS_STATES,
-  "compressor_run_status_1": COMPRESSOR_RUN_STATUS_STATES,
-  "compressor_run_status_2": COMPRESSOR_RUN_STATUS_STATES,
-  "condensing_return_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "condensing_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "condensing_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "condensing_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "condensing_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "condensing_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "conference_call_status": ACTIVE_INACTIVE_STATUS,
-  "discharge_air_isolation_damper_command": OPEN_CLOSED_STATES,
-  "discharge_air_isolation_damper_status": OPEN_CLOSED_STATES,
-  "failed_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_circulation_pump_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_communication_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_compressor_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_discharge_air_isolation_damper_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_discharge_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_discharge_fan_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_exhaust_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_heating_water_valve_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_isolation_valve_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_mixed_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_return_air_isolation_damper_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_smoke_detection_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_supply_air_isolation_damper_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_supply_fan_alarm": ACTIVE_INACTIVE_STATUS,
-  "failed_zone_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "filter_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_building_air_static_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_building_air_static_pressure_alarm_1": ACTIVE_INACTIVE_STATUS,
-  "high_building_air_static_pressure_alarm_2": ACTIVE_INACTIVE_STATUS,
-  "high_differential_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_supply_air_static_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_supply_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_supply_water_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_zone_air_co_concentration_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_zone_air_co2_concentration_alarm": ACTIVE_INACTIVE_STATUS,
-  "high_zone_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "local_alarm": ACTIVE_INACTIVE_STATUS,
-  "local_override_alarm": ACTIVE_INACTIVE_STATUS,
-  "local_override_isolation_valve_alarm": ACTIVE_INACTIVE_STATUS,
-  "lost_power_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_building_air_static_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_building_air_static_pressure_alarm_1": ACTIVE_INACTIVE_STATUS,
-  "low_building_air_static_pressure_alarm_2": ACTIVE_INACTIVE_STATUS,
-  "low_differential_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_flowrate_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_supply_air_static_pressure_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_supply_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_supply_water_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "low_zone_air_temperature_alarm": ACTIVE_INACTIVE_STATUS,
-  "conference_id_match_status": DOES_NOT_MATCH_MATCH_STATUS,
-  "dehumidification_run_command": ON_OFF_STATES,
-  "dehumidification_run_status": ON_OFF_STATES,
-  "discharge_fan_run_command": DISCHARGE_FAN_RUN_COMMAND_STATES,
-  "discharge_fan_run_status": ON_OFF_STATES,
-  "discharge_fan_speed_mode": DISCHARGE_FAN_SPEED_MODE_STATES,
-  "dishwasher_run_status": ON_OFF_STATES,
-  "dryer_run_status": ON_OFF_STATES,
-  "economizer_mode": ECONOMIZER_MODE_STATES,
-  "electric_heater_run_command": ON_OFF_STATES,
-  "evaporative_cooler_run_command": ON_OFF_STATES,
-  "evaporative_cooler_run_status": ON_OFF_STATES,
-  "exhaust_air_damper_command": OPEN_CLOSED_STATES,
-  "exhaust_air_damper_status": OPEN_CLOSED_STATES,
-  "exhaust_fan_run_command": EXHAUST_FAN_RUN_COMMAND_STATES,
-  "exhaust_fan_run_command_1": EXHAUST_FAN_RUN_COMMAND_STATES,
-  "exhaust_fan_run_command_2": EXHAUST_FAN_RUN_COMMAND_STATES,
-  "exhaust_fan_run_status": EXHAUST_FAN_RUN_STATUS_STATES,
-  "exhaust_fan_run_status_1": EXHAUST_FAN_RUN_STATUS_STATES,
-  "exhaust_fan_run_status_2": EXHAUST_FAN_RUN_STATUS_STATES,
-  "fan_run_command": ON_OFF_STATES,
-  "fan_run_status": ON_OFF_STATES,
-  "fan_speed_mode": FAN_SPEED_MODE_STATES,
-  "gas_heater_run_command": ON_OFF_STATES,
-  "ground_isolation_command": ON_OFF_STATES,
-  "heat_exchange_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heat_exchange_return_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heat_exchange_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heat_exchange_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heat_exchange_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heat_recovery_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heat_recovery_run_command": ON_OFF_STATES,
-  "heat_recovery_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heat_recovery_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heat_recovery_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heat_wheel_run_command": ON_OFF_STATES,
-  "heat_wheel_run_status": ON_OFF_STATES,
-  "heater_run_command": HEATER_RUN_COMMAND_STATES,
-  "heater_run_status": ON_OFF_STATES,
-  "heating_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_side_ground_return_economizer_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heating_side_ground_return_economizer_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_side_ground_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_side_ground_supply_economizer_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_side_ground_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heating_side_ground_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "heating_supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "heating_water_valve_command": OPEN_CLOSED_STATES,
-  "heating_water_valve_status": OPEN_CLOSED_STATES,
-  "high_discharge_fan_speed_command": ON_OFF_STATES,
-  "high_fan_speed_command": ON_OFF_STATES,
-  "humidification_run_command": ON_OFF_STATES,
-  "humidification_run_status": ON_OFF_STATES,
-  "isolation_damper_command": OPEN_CLOSED_STATES,
-  "isolation_damper_status": OPEN_CLOSED_STATES,
-  "isolation_valve_command": OPEN_CLOSED_STATES,
-  "isolation_valve_status": OPEN_CLOSED_STATES,
-  "low_discharge_fan_speed_command": ON_OFF_STATES,
-  "low_fan_speed_command": ON_OFF_STATES,
-  "medium_discharge_fan_speed_command": ON_OFF_STATES,
-  "min_outside_air_damper_command": OPEN_CLOSED_STATES,
-  "min_outside_air_damper_status": OPEN_CLOSED_STATES,
-  "outside_air_damper_command": OPEN_CLOSED_STATES,
-  "outside_air_damper_status": OPEN_CLOSED_STATES,
-  "outside_condensing_loop_return_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "outside_condensing_loop_return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "process_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "return_air_damper_command": OPEN_CLOSED_STATES,
-  "return_air_isolation_damper_command": OPEN_CLOSED_STATES,
-  "return_air_isolation_damper_status": OPEN_CLOSED_STATES,
-  "return_fan_run_command": ON_OFF_STATES,
-  "return_fan_run_status": ON_OFF_STATES,
-  "return_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "return_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "reversing_valve_command": REVERSING_VALVE_COMMAND_STATES,
-  "run_command": RUN_COMMAND_STATES,
-  "run_mode": RUN_MODE_STATES,
-  "run_status": RUN_STATUS_STATES,
-  "spray_pump_run_command": ON_OFF_STATES,
-  "spray_pump_run_status": ON_OFF_STATES,
-  "supervisor_control_mode": DISABLED_ENABLED_STATES,
-  "supply_air_damper_command": OPEN_CLOSED_STATES,
-  "supply_air_damper_status": OPEN_CLOSED_STATES,
-  "supply_air_isolation_damper_command": OPEN_CLOSED_STATES,
-  "supply_air_isolation_damper_status": OPEN_CLOSED_STATES,
-  "supply_fan_run_command": SUPPLY_FAN_RUN_COMMAND_STATES,
-  "supply_fan_run_status": SUPPLY_FAN_RUN_STATUS_STATES,
-  "supply_water_isolation_valve_command": OPEN_CLOSED_STATES,
-  "supply_water_isolation_valve_status": OPEN_CLOSED_STATES,
-  "sweeper_pump_run_command": ON_OFF_STATES,
-  "sweeper_pump_run_status": ON_OFF_STATES,
-  "user_occupancy_override_status": DISABLED_ENABLED_STATES,
-  "zone_occupancy_status": OCCUPIED_UNOCCUPIED_STATES,
-}
+def map_units(fieldname):
+    if any([
+        "alarm" in fieldname,
+        "run_command" in fieldname,
+        "run_status" in fieldname,
+        "damper_command" in fieldname,
+        "damper_status" in fieldname,
+        "mode" in fieldname,
+        "valve_command" in fieldname,
+        "valve_status" in fieldname,
+        "count" in fieldname,
+        "powerfactor" in fieldname
+    ]):
+        return "no-units"
+    elif "percentage" in fieldname:
+        return "percent"
+    elif "temperature" in fieldname:
+        return "degrees-fahrenheit"
+    elif "frequency" in fieldname:
+        return "hertz"
+    elif "current" in fieldname:
+        return "amperes"
+    elif "torque" in fieldname:
+        return "newton-meters"
+    elif "power" in fieldname:
+        return "kilowatts"
+    elif "illuminance" in fieldname:
+        return "lux"
+    elif "energy_accumulator" in fieldname:
+        return "kilowatt-hours"
+    elif "time_accumulator" in fieldname:
+        return "hours"
+    elif "load_power" in fieldname:
+        return "tons-of-refrigeration"
+    elif "cooling_thermal_power" in fieldname:
+        return "tons-of-refrigeration"
+    elif "reactive_power" in fieldname:
+        return "kilovolt-amperes-reactive"
+    elif "reactive_energy_accumulator" in fieldname:
+        return "kilovolt-ampere-hours"
+    elif "thermal_energy_accumulator" in fieldname:
+        return "tons-of-refrigeration"
+    elif "thermalefficiency" in fieldname:
+        return "kilowatts-per-ton"
+    elif "water_volume_accumulator" in fieldname:
+        return "us-gallons"
+    elif "heating_thermal_power" in fieldname:
+        return "btus-per-hour"
+    elif "enthalpy" in fieldname:
+        return "btus-per-pound-dry-air"
+    elif "humidity" in fieldname:
+        return "percent-relative-humidity"
+    elif "voltage" in fieldname:
+        return "volts"
+    elif "air" in fieldname and "pressure" in fieldname:
+        return "inches-of-water"
+    elif any(["refrigerant" in fieldname, "water" in fieldname, "differential" in fieldname])  and "pressure" in fieldname:
+        return "pounds-force-per-square-inch"
+    elif "air" in fieldname and "flowrate" in fieldname:
+        return "cubic-feet-per-minute"
+    elif "water" in fieldname and "flowrate" in fieldname:
+        return "us-gallons-per-minute"
+    else:
+        pass
+    
+def map_states(field_name, raw_state):
+    if raw_state==None or type(raw_state)==float: 
+        return_value = None
+    else:
+        if raw_state[0]=="active":
+            if "alarm" in field_name: return_value = "ACTIVE"
+            if "occupancy_status" in field_name: return_value = "OCCUPIED"
+            if any(["run_command" in field_name, "run_status" in field_name]): return_value = "ON"
+            if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "OPEN"
+            if any(["valve_command" in field_name, "valve_status" in field_name]):  return_value = "OPEN"
+        if raw_state[0]=="inactive":
+            if "alarm" in field_name: return_value = "INACTIVE"
+            if "occupancy_status" in field_name: return_value = "UNOCCUPIED"
+            if any(["run_command" in field_name, "run_status" in field_name]): return_value = "OFF"
+            if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "CLOSED"
+            if any(["valve_command" in field_name, "valve_status" in field_name]): return_value = "CLOSED"
+    return(return_value)

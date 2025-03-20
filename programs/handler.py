@@ -266,6 +266,8 @@ class Handler:
         try:
             # Check that the loadsheet object is built.
             assert self.loadsheet_built, "Loadsheet is not initialized."
+
+            excel_path = excel_path.replace('\\', '/')
             folderpath = excel_path.replace(excel_path.split('/')[-1], '')
             assert os.path.exists(
                 folderpath[:-1]), "Specified Excel path '{}' is not valid.".format(folderpath[:-1])
