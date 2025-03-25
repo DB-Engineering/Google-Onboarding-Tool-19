@@ -499,6 +499,7 @@ class Assets:
 				location = data[asset]['fields'][field]['bms_info']['location']
 				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
 				manually_mapped = data[asset]['fields'][field]['manually_mapped']
+				is_missing = data[asset]['fields'][field]['ismissing']
 				name = data[asset]['fields'][field]['bms_info']['name']
 				path = data[asset]['fields'][field]['bms_info']['path']
 				ttype = data[asset]['fields'][field]['bms_info']['type']
@@ -515,6 +516,7 @@ class Assets:
 					'units':units,
 					'required':'YES',
 					'manuallymapped':manually_mapped,
+					'ismissing': is_missing,
 					'building':building,
 					'generaltype':generalType,
 					'typename':typeName,

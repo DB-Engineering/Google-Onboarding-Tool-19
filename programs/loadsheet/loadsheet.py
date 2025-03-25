@@ -55,7 +55,8 @@ _REQ_OUTPUT_HEADERS = [
 		'typename',
 		'assetname',
 		'fullassetpath',
-		'standardfieldname'
+		'standardfieldname',
+		'ismissing'
 		]
 
 class Loadsheet:
