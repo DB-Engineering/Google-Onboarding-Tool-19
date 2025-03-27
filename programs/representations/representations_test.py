@@ -240,7 +240,7 @@ class TestRepresentationsMethods(ut.TestCase):
 		dump = self.assets.dump_to_data()
 		expected  =[{'location': 'l', 'controlProgram': 'cP', 'name': 'n', 'type': 't',
 					'path': 'p', 'deviceId': 'dID', 'objectType': 'oT', 'objectId': 'oID',
-					'objectName': 'oN', 'units': 'u', 'required': 'YES', 'manuallyMapped': '',
+					'objectName': 'oN', 'units': 'u', 'required': 'YES', 'manuallyMapped': '','isMissing': 'NO'
 					'building': 'bldg1', 'generalType': 'gT', 'typeName': '',
 					'assetName': 'asset1', 'fullAssetPath': 'asset_path1', 'standardFieldName': 'fN'}]
 
