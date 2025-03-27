@@ -74,7 +74,7 @@ class Asset:
 		self.matched = False
 		self.placeholderid = 10000
 
-	def add_field(self,field_name,bms_info,bacnet_address,manually_mapped=False,placeholder=False):
+	def add_field(self,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing="NO",placeholder=False):
 		"""
 		Adds a field to the asset object
 
@@ -85,6 +85,7 @@ class Asset:
 			- bacnet_address: dictionary describing deviceId, objectId,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
+			- isMissing: flag if field is added as 'missing', set false by default
 			- placeholder: flag for placeholder field creation, default false
 
 		returns: N/A
@@ -94,11 +95,11 @@ class Asset:
 			self.bms_info={'bms_type':"",'location':'', 'controlprogram':'', 'name':'Placeholder', 'path':'x', 'type':'x'}
 			self.bacnet_address={'deviceid':'', 'objectid':self.placeholderid, 'objectname':'x', 'objecttype':'x', 'units':''}
 			self.placeholderid += 1
-			self.fields[field_name] = Field(field_name,self.bms_info,self.bacnet_address,manually_mapped, placeholder = True)
+			self.fields[field_name] = Field(field_name,self.bms_info,self.bacnet_address,manually_mapped,is_missing,placeholder = True)
 		else:
-			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
+			self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped,is_missing)
 
-	def update_field(self,field_name,bms_info,bacnet_address,manually_mapped=False):
+	def update_field(self,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing=False):
 		"""
 		Update a field on the asset.
 
@@ -109,13 +110,14 @@ class Asset:
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
+			- isMissing: flag if field is added as 'missing', set false by default
 
 
 		returns: N/A
 		"""
 		assert field_name in self.fields, "Field not defined."
 		del self.fields[field_name]
-		self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped)
+		self.fields[field_name] = Field(field_name,bms_info,bacnet_address,manually_mapped,is_missing)
 
 	def update_type(self,type_name):
 		"""
@@ -218,7 +220,7 @@ class Asset:
 			existing_fields = self.get_fields()
 			for field in self.match.ont_type_fields:
 				if field[0] not in existing_fields and field[1]:
-					self.add_field(field[0], '', '', placeholder=True)
+					self.add_field(field[0], '', '', is_missing="YES",placeholder=True)
 
 	def dump(self):
 		"""
@@ -234,7 +236,7 @@ class Field:
 	""" A field model for the loadsheet data. Requires BMS specific metadata and BACnet address info. """
 	#TODO: Add in BMS type functionality that spans the different classes
 
-	def __init__(self,field_name,bms_info,bacnet_address,manually_mapped=False,placeholder=False):
+	def __init__(self,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing="NO",placeholder=False):
 		"""
 		Initialize the model.
 
@@ -245,12 +247,14 @@ class Field:
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
+			- isMissing: flag if field is added as 'missing', set false by default
 			- placeholder: flag for placeholder field creation, default false
 
 		returns: field object
 		"""
 		self.field_name=field_name
 		self.manually_mapped=manually_mapped
+		self.is_missing = is_missing
 		if not placeholder:
 			self.bms_info = bms_info
 			assert 'bms_type' in self.bms_info, "Argument 'bms_info' requires a 'bms_type' key."
@@ -276,7 +280,7 @@ class Field:
 
 		returns: dictionary of BMS info of passed field
 		"""
-		details = {'bms_info':self.bms_info,'bacnet_address':self.bacnet_address,'manually_mapped':self.manually_mapped}
+		details = {'bms_info':self.bms_info,'bacnet_address':self.bacnet_address,'manually_mapped':self.manually_mapped,'is_missing':self.is_missing}
 		return details
 
 class Assets:
@@ -326,7 +330,7 @@ class Assets:
 		"""
 		self.assets[full_asset_name].update_type(type_name)
 
-	def add_field(self,full_asset_name,field_name,bms_info,bacnet_address,manually_mapped=False):
+	def add_field(self,full_asset_name,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing="NO"):
 		"""
 		Add a field.
 
@@ -338,8 +342,9 @@ class Assets:
 			- bacnet_address: dictionary describing deviceID, objectID,
 							  objectName, objectType, and units
 			- manuallyMapped: flag if field is manually filled in, set false by default
+			- isMissing: flag is field is added as MISSING
 		"""
-		self.assets[full_asset_name].add_field(field_name,bms_info,bacnet_address,manually_mapped)
+		self.assets[full_asset_name].add_field(field_name,bms_info,bacnet_address,manually_mapped,is_missing)
 
 	def remove_field(self,full_asset_name,field_name):
 		"""
@@ -458,7 +463,7 @@ class Assets:
 				'units':data_row['units']
 			}
 
-		self.add_field(data_row['fullassetpath'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'])
+		self.add_field(data_row['fullassetpath'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'],data_row['ismissing'])
 
 	def load_from_data(self,data):
 		"""
@@ -499,7 +504,7 @@ class Assets:
 				location = data[asset]['fields'][field]['bms_info']['location']
 				controlProgram = data[asset]['fields'][field]['bms_info']['controlprogram']
 				manually_mapped = data[asset]['fields'][field]['manually_mapped']
-				is_missing = data[asset]['fields'][field]['ismissing']
+				is_missing = data[asset]['fields'][field]['is_missing']
 				name = data[asset]['fields'][field]['bms_info']['name']
 				path = data[asset]['fields'][field]['bms_info']['path']
 				ttype = data[asset]['fields'][field]['bms_info']['type']
