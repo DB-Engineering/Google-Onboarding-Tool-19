@@ -383,8 +383,9 @@ class Abel():
         # Check if raw BMS units match the standard units and flag the mismatching ones for manual review
         self.entity_fields_data['unitsCheck'] = ''
         self.entity_fields_data.loc[(self.entity_fields_data['units'].str.replace("_", "-") != self.entity_fields_data['rawUnitValue'].str.replace("_", "-")) & 
-                                    (self.entity_fields_data['Missing']=='FALSE'), 
-                                    'unitsCheck'] = 'ERROR'
+                                    (self.entity_fields_data['Missing']=='FALSE') &
+                                    (self.entity_fields_data['rawUnitValue'].isna()==False), 
+                                    'unitsCheck'] = 'Incorrect units in BMS'
 
         #### ADD AND MAP STATES DATA
         states = self.entity_fields_data.loc[(self.entity_fields_data['Missing']=='FALSE')]   # filter out missing points
@@ -402,7 +403,7 @@ class Abel():
         self.entity_fields_data.loc[self.entity_fields_data['entityGuid'].isna()==True, 'reportingEntityField'] = np.nan
 
         incorrect_units = self.entity_fields_data.loc[self.entity_fields_data['unitsCheck']=='ERROR', 
-                                                      ['deviceId', 'controlProgram', 'objectType', 'objectId', 'objectName', 'standardFieldName','units', 'rawUnitValue']].drop_duplicates()
+                                                      ['controlProgram', 'deviceId', 'objectType', 'objectId', 'objectName', 'standardFieldName', 'units', 'rawUnitValue']].drop_duplicates()
         self.abel['BMS Incorrect Units'] = incorrect_units.to_dict()
 
         # Replace incorrect units with correct ones

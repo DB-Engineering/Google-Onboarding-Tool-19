@@ -60,23 +60,28 @@ def map_units(fieldname):
         return "cubic-feet-per-minute"
     elif "water" in fieldname and "flowrate" in fieldname:
         return "us-gallons-per-minute"
+    elif fieldname in ["flowrate_sensor", "flowrate_setpoint"]:
+        return "us-gallons-per-minute"
+    elif "concentration" in fieldname:
+        return "parts-per-million"
     else:
         pass
     
 def map_states(field_name, raw_state):
-    if raw_state==None or type(raw_state)==float: 
-        return_value = None
-    else:
+    return_value = None
+    if isinstance(raw_state, tuple):
         if raw_state[0]=="active":
             if "alarm" in field_name: return_value = "ACTIVE"
             if "occupancy_status" in field_name: return_value = "OCCUPIED"
             if any(["run_command" in field_name, "run_status" in field_name]): return_value = "ON"
             if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "OPEN"
             if any(["valve_command" in field_name, "valve_status" in field_name]):  return_value = "OPEN"
+            if all(["economizer" in field_name, "mode" in field_name]):  return_value = "ON"
         if raw_state[0]=="inactive":
             if "alarm" in field_name: return_value = "INACTIVE"
             if "occupancy_status" in field_name: return_value = "UNOCCUPIED"
             if any(["run_command" in field_name, "run_status" in field_name]): return_value = "OFF"
             if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "CLOSED"
             if any(["valve_command" in field_name, "valve_status" in field_name]): return_value = "CLOSED"
-    return(return_value)
+            if all(["economizer" in field_name, "mode" in field_name]):  return_value = "OFF"
+    return return_value
