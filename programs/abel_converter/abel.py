@@ -381,7 +381,7 @@ class Abel():
                                     | (self.entity_fields_data['rawFieldName'].str.contains('multi-state')==True), ['rawUnitPath', 'rawUnitValue', 'units']] = ''
         
         # Check if raw BMS units match the standard units and flag the mismatching ones for manual review
-        self.entity_fields_data['unitsCheck'] = ''
+        self.entity_fields_data['unitsCheck'] = np.nan
         self.entity_fields_data.loc[(self.entity_fields_data['units'].str.replace("_", "-") != self.entity_fields_data['rawUnitValue'].str.replace("_", "-")) & 
                                     (self.entity_fields_data['Missing']=='FALSE') &
                                     (self.entity_fields_data['rawUnitValue'].isna()==False), 
@@ -402,8 +402,11 @@ class Abel():
         # Clear Reporting Entity Field for Reporting Entities that are not linked to any Virtual Entities (otherwise validation fails)
         self.entity_fields_data.loc[self.entity_fields_data['entityGuid'].isna()==True, 'reportingEntityField'] = np.nan
 
-        incorrect_units = self.entity_fields_data.loc[self.entity_fields_data['unitsCheck']=='ERROR', 
-                                                      ['controlProgram', 'deviceId', 'objectType', 'objectId', 'objectName', 'standardFieldName', 'units', 'rawUnitValue']].drop_duplicates()
+        incorrect_units = self.entity_fields_data.loc[self.entity_fields_data['unitsCheck'].isna()==False, 
+                                                      ['controlProgram', 'deviceId', 'objectType', 'objectId', 'objectName', 'standardFieldName', 'rawUnitValue', 'units']].drop_duplicates()
+        incorrect_units['objectId'] = incorrect_units['objectType'] + ":" + incorrect_units['objectId'].astype(str)
+        incorrect_units.drop('objectType', axis=1, inplace=True)
+        incorrect_units.columns = ['ControlProgram', 'deviceId', 'objectId', 'objectName', 'Normalized Field Name', 'Current BMS Units', 'Correct Units']
         self.abel['BMS Incorrect Units'] = incorrect_units.to_dict()
 
         # Replace incorrect units with correct ones

@@ -22,6 +22,8 @@ def map_units(fieldname):
         return "amperes"
     elif "torque" in fieldname:
         return "newton-meters"
+    elif "cooling_thermal_power" in fieldname:
+        return "tons-of-refrigeration"
     elif "power" in fieldname:
         return "kilowatts"
     elif "illuminance" in fieldname:
@@ -31,8 +33,6 @@ def map_units(fieldname):
     elif "time_accumulator" in fieldname:
         return "hours"
     elif "load_power" in fieldname:
-        return "tons-of-refrigeration"
-    elif "cooling_thermal_power" in fieldname:
         return "tons-of-refrigeration"
     elif "reactive_power" in fieldname:
         return "kilovolt-amperes-reactive"
