@@ -54,7 +54,7 @@ def map_units(fieldname):
         return "volts"
     elif "air" in fieldname and "pressure" in fieldname:
         return "inches-of-water"
-    elif any(["refrigerant" in fieldname, "water" in fieldname, "differential" in fieldname])  and "pressure" in fieldname:
+    elif any(["refrigerant" in fieldname, "water" in fieldname, "differential" in fieldname]) and "pressure" in fieldname:
         return "pounds-force-per-square-inch"
     elif "air" in fieldname and "flowrate" in fieldname:
         return "cubic-feet-per-minute"
