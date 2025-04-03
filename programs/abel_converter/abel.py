@@ -382,6 +382,8 @@ class Abel():
         
         # Check if raw BMS units match the standard units and flag the mismatching ones for manual review
         self.entity_fields_data['unitsCheck'] = np.nan
+        self.entity_fields_data['unitsCheck'] = self.entity_fields_data['unitsCheck'].astype(object)
+        
         self.entity_fields_data.loc[(self.entity_fields_data['units'].str.replace("_", "-") != self.entity_fields_data['rawUnitValue'].str.replace("_", "-")) & 
                                     (self.entity_fields_data['Missing']=='FALSE') &
                                     (self.entity_fields_data['rawUnitValue'].isna()==False), 
