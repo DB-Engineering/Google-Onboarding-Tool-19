@@ -64,10 +64,10 @@ Once the LoadBoy2000 program starts, pass in a path (absolute or relative) to th
 import ontology '../ontology/yaml/resources'
 ````
 
-#### [Optional] Step 3 - Clean the "raw" loadsheet
+#### [Optional] Step 3 - Import raw BMS loadsheet
 This step is only required if you are passing in a raw points list (directly exported from an ALC BMS).
 ```
-clean '../loadsheet/Loadsheet_ALC.xlsx'
+import bms '../loadsheet/Loadsheet_ALC.csv'
 ```
 
 #### Step 4 - Import the loadsheet (either the "clean" output from Step 3 or a previously "cleaned" loadsheet)
@@ -76,9 +76,15 @@ Load the loadsheet that you want to validate, normalized, and type match. If suc
 import loadsheet '../loadsheet/Loadsheet_ALC.xlsx'
 ```
 
+#### Step 5.1 - Normalize the loadsheet using ML models:
+Apply ML models combined with rules to predict required, standardFieldName, assetName, generalType, units. If successful, you should get CLI confirmation.
 
-#### Step 5 - Normalize the loadsheet (AKA apply the ruleset):
-Apply reular expression rules to populate the standardFieldName column. The default ruleset uses DBO field names. If successful, you should get CLI confirmation.
+```
+ml_normalize
+```
+
+#### Step 5.2 - OR Normalize the loadsheet using legacy rule-based approach:
+Apply regular expression rules to populate the standardFieldName column. The default ruleset uses DBO field names. If successful, you should get CLI confirmation.
 
 ```
 normalize '../resources/rules/google_rules.json'
@@ -87,6 +93,7 @@ normalize '../resources/rules/google_rules.json'
 
 #### Step 6 - Export to a NEW loadsheet for review
 Once rules are successfully applied, you should see a new file with normalized columns (e.g., `required`, `assetName`, and `standardFieldName`) filled in. 
+Tool adds a Pivot table.
 
 ```
 export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'
