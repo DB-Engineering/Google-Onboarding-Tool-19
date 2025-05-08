@@ -1,0 +1,132 @@
+{
+  "rules": [
+    {
+      "ruleName": "ALC ObjectID ObjectType split",
+      "ruleField": "objectId",
+      "rulePattern": "(AV|BV|BI|BO|AI|AO|MSV|LOOP):(\\d+)",
+      "outputs": {
+        "objectType": 1,
+        "objectId": 2
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - WEATHER",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bOA\\b.Conditions)",
+      "outputs": {
+        "assetName": "OA"
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - HW SYSTEM",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bHW System\\b)",
+      "outputs": {
+        "assetName": "HW SYSTEM"
+      }
+    }, 
+    {
+      "ruleName": "Asset Name Definition - CHW SYSTEM",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bCHW System\\b)",
+      "outputs": {
+        "assetName": "CHW SYSTEM"
+      }
+    }, 
+    {
+      "ruleName": "Asset Name Definition - CDW SYSTEM",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bCDW System\\b)",
+      "outputs": {
+        "assetName": "CDW SYSTEM"
+      }
+    },   
+    {
+      "ruleName": "Asset Name Definition - BLR (Control Program)",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bBoiler\\b).*(\\d)",
+      "outputs": {
+        "assetName": ["BLR ", 2]
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - AHU ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((AHU|AC|ACU).\\d\\d?\\w?)",
+      "outputs": {
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - MAU ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((MAU).\\d\\d?\\w?)",
+      "outputs": {
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - FC ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((FCU|FC|CRAC).\\d\\d?)",
+      "outputs": {
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - AC ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((AC|AHU).?\\d-\\d\\d?).*IDF",
+      "outputs": {
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - FAN ()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((\\bTF\\b|\\bEF\\b|\\bLEF\\b|\\bDEF\\b|\\bKEF\\b).\\d)",
+      "outputs": {
+        "assetName": 1
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - FAN ()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "((\\bTF\\b|\\bEF\\b).*(\\d-\\d\\d?))",
+      "outputs": {
+        "assetName": 1
+      }
+    },    
+    {
+      "ruleName": "Asset Name Definitions - VAV ()-()-()",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bVAV\\b|\\bVAV.?CO\\b|\\bVAV.?RH\\b|\\bCO\\b|\\bRH\\b).(\\d?\\w?-\\d-\\d*)",
+      "outputs": {
+        "assetName": 0
+      }
+      ,
+      "filters": {
+        "controlProgram": [
+          "exclude",
+          "\\bFC\\b|\\bFCU\\b|IDF"
+        ]
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - Pump",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bP|S|H)?(CH|CD|C|H)(WP\\b)-? ?(\\d)?",
+      "outputs": {
+        "assetName": 0
+      }
+    },
+    {
+      "ruleName": "Asset Name Definition - Other equipment",
+      "ruleField": "controlProgram",
+      "rulePattern": "(\\bHC\\b|\\bUH\\b).(\\d*-? ?\\d\\d?)",
+      "outputs": {
+        "assetName": 0
+      }
+    }
+  ]
+}

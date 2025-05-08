@@ -18,7 +18,6 @@ import os
 import ontology.ontology
 from pyfiglet import Figlet
 from pretty import PrettyPrint
-from abel_converter import point_list_prettifier
 """
 
 TODO: Fix path inputs to recognize quotes.
@@ -106,15 +105,6 @@ class Mapper(cmd.Cmd):
 		self._clear()
 		print(self.intro)
 
-	def do_clean(self, args):
-		inputs = self._parse_args(args)
-		raw_loadsheet_path = inputs[0]
-		print(f'RAW PATH: {raw_loadsheet_path}')
-		try:
-			point_list_prettifier.prettify_loadsheet(loadsheet_path=raw_loadsheet_path)
-		except FileNotFoundError as e:
-			raise e
-
 	def do_import(self,args):
 		"""			Facilitate the importing of data.
 			usage: import <bms|loadsheet|ontology> <file|folder> """
@@ -174,6 +164,12 @@ class Mapper(cmd.Cmd):
 		print("[INFO]\tApplying rules...")
 		self.handler.apply_rules(inputs[0])
 
+	def do_ml_normalize(self,args):
+		"""			Run the rules file given a specific rules filepath
+			usage: normalize <rules filepath>"""
+		print("[INFO]\tNormalizing...")
+		self.handler.apply_ml_normalization()
+
 	def do_export(self,args):
 		"""			Export the data as an excel file.
 			usage: export <excel> <export filepath>"""
@@ -194,7 +190,6 @@ class Mapper(cmd.Cmd):
 			return
 
 		if export_type == 'excel':
-			print("[INFO]\tExporting to Excel loadsheet.")
 			self.handler.export_loadsheet(excel_path=export_path)
 
 	def do_convert(self, args):
@@ -205,10 +200,13 @@ class Mapper(cmd.Cmd):
 		elif not (self.handler.payload_path or self.handler.last_loadsheet_path):
 			print("[ERROR]\t Payload and valid loadsheet must be imported before export an ABEL spreadsheet.")
 		else:
+			# try: 
 			if len(inputs) == 2:
 				self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path, output_path=inputs[1])
 			else:
 				self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path)
+			# except Exception as e:
+			# 	print(f"[ERROR]\t Could not convert loadsheet: {e}.")
 
 	def do_validate(self,args):
 		"""			Validate the loadsheet data against the ontology.
@@ -223,7 +221,6 @@ class Mapper(cmd.Cmd):
 		if not self.handler.validated:
 			print("[ERROR]\tLoadsheet isn't validated yet. Run 'validate' first.")
 			return
-
 
 		inputs = args.split()
 

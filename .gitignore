@@ -3,4 +3,5 @@
 programs/src/autopep8/
 ./*/_pycache_
 ./env/
+./.venv/
 ./.DS_Store

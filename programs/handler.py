@@ -15,11 +15,13 @@
 from abel_converter import abel
 import os
 import representations.representations
+from ml_normalize.ml_handler import MLHandler
 import ontology.ontology
 import loadsheet.loadsheet as load
 from pretty import PrettyPrint
 import base64
 from typing import Optional
+import pandas as pd
 
 
 def _convert_to_base64(data):
@@ -145,6 +147,7 @@ class Handler:
                 print("[INFO]\tLoadsheet Imported")
                 self.loadsheet_built = True
                 self.last_loadsheet_path = loadsheet_path
+                print('\n')
 
             except Exception as e:
                 print("[ERROR]\tLoadsheet raised errors: {}".format(e))
@@ -253,6 +256,61 @@ class Handler:
         except Exception as e:
             print(f"[ERROR]\tRules could not be applied: {e}.")
 
+    def apply_ml_normalization(self):
+        """ Run ML normalization on the loadsheet data. """
+
+        # use rules for asset name normalization
+        rules_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "resources",
+                "rules",
+                "google_rules_asset_name.json"
+            )
+        assert os.path.exists(rules_path), f"Rule file path '{rules_path}' is not valid."
+        assert self.loadsheet_built, "Loadsheet is not built."
+
+        try:
+            print("[INFO]\tApplying rules for asset names...")
+            self.ls.apply_rules(rules_path)
+            print("[INFO]\tRules applied.")
+        except Exception as e:
+            print(f"[ERROR]\tRules could not be applied: {e}.")
+
+        # use ML models to predict required, generalType, and standardFieldName
+        ml_handler = MLHandler()
+        assert ml_handler.models_loaded, "Loadsheet is not initialized."
+        assert ml_handler.tokenizers_loaded, "Representations are not built."
+        try:
+            print("[INFO]\tApplying ML normalization...")
+            input_cols = ['controlProgram', 'Name', 'objectName', 'type']
+            
+            self.ls._update_header_map(load._ML_PREDICTION_HEADERS) # update hader mapping in Loadsheet object for correct excel export
+
+            std_input_cols = load.Loadsheet._to_std_headers(input_cols)
+            
+            df = pd.DataFrame.from_records(self.ls._data)
+            df = ml_handler.get_predictions(df, std_input_cols)
+    
+            print("[INFO]\tML normalization applied.")
+        except Exception as e:
+            print(f"[ERROR]\tML normalization failed: {e}.")
+
+        # map units using standardFieldName mapping
+        # try:
+        print("[INFO]\tMapping units...")
+        mask = df['required']=='YES'
+        df.loc[mask, 'units'] = df.loc[mask, 'standardfieldname'].apply(abel.value_mapping.map_units)
+        print("[INFO]\tUnits mapped.")
+        # except Exception as e:
+        #     print(f"[ERROR]\tUnit mapping failed: {e}.")
+
+        self.ls._update_header_map(df.columns)
+
+        df.columns = self.ls._to_std_headers(df.columns)
+        self.ls._update_data_from_dataframe(df)
+
+
     def export_loadsheet(self, excel_path):
         """
         exports loadshet data to excel file
@@ -329,13 +387,13 @@ class Handler:
             return
 
         '''
-		types is a dictionary of dictionary of list pairs
-		each instance is of form
-		"general_type":{
-			"fields_hash":[[list_of asset paths],[list of type fields]],
-			"fields_hash":[[list_of asset paths],[list of type fields]]
-		}
-		'''
+        types is a dictionary of dictionary of list pairs
+        each instance is of form
+        "general_type":{
+            "fields_hash":[[list_of asset paths],[list of type fields]],
+            "fields_hash":[[list_of asset paths],[list of type fields]]
+        }
+        '''
 
         types = {}
 
