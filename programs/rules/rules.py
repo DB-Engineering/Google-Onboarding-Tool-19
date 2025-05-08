@@ -100,7 +100,7 @@ class Rule:
 		self.log = []
 
 	def Apply(self,dataJson):
-		"""
+		""" 
 		Apply the whole chain of rule components to the passed data dictionary.
 
 		args:
