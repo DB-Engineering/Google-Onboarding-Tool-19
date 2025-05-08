@@ -25,30 +25,6 @@ This repo contains the following critical pieces:
 	4. A rules engine for applying regular expression pattern matching
 	5. A representations class set for converting the loadsheet into ontology-usable objects
 
-### Dependencies
-This repo requires the following libraries to be installed prior to use:
-1. pyyaml (for parsing YAML documents)
-2. pyfiglet (for fancy CLI name)
-3. openpyxl (for Excel read/write)
-4. pandas (for loadsheet backend)
-5. ruamel.yaml
-
-If not already installed, you can install the libraries by running `requirements.py` in your command line:
-
-```>>> python requirements.py```
-
-## Workflow
-**General Loadsheet Process**
-1. Prepare the loadsheet
-	1. Obtain a point list (in XSLX or CSV format)
-	2. Format the point list to adhere to the loadsheet template sheet
-	3. Run the rule engine over the data
-	4. Manually review the unmapped points
-2. Validate the loadsheet
-3. Match the entities in the loadsheet to existing DBO types
-4. Create new types in the referenced ontology, as needed
-5. Apply matched DBO types to the loadsheet
-
 ### Setup
 From your command prompt (or euivalent console) run the progam (note that `python` is used here, but your local machine may use `py`, `py3`, or `python3`).
 
@@ -65,6 +41,19 @@ python -m venv .venv
 source/.venv/bin/activate
 pip install -r requirements.txt
 ```
+
+
+## Workflow
+**General Loadsheet Process**
+1. Prepare the loadsheet
+	1. Obtain a point list (in XSLX or CSV format)
+	2. Format the point list to adhere to the loadsheet template sheet
+	3. Run the rule engine over the data
+	4. Manually review the unmapped points
+2. Validate the loadsheet
+3. Match the entities in the loadsheet to existing DBO types
+4. Create new types in the referenced ontology, as needed
+5. Apply matched DBO types to the loadsheet
 
 ### Detailed Workflow
 #### Step 1 - Start the Commmand Line Interface (LoadBoy2000)
