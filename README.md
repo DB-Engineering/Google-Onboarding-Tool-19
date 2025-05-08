@@ -49,6 +49,23 @@ If not already installed, you can install the libraries by running `requirements
 4. Create new types in the referenced ontology, as needed
 5. Apply matched DBO types to the loadsheet
 
+### Setup
+From your command prompt (or euivalent console) run the progam (note that `python` is used here, but your local machine may use `py`, `py3`, or `python3`).
+
+Windows:
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Linux:
+```
+python -m venv .venv
+source/.venv/bin/activate
+pip install -r requirements.txt
+```
+
 ### Detailed Workflow
 #### Step 1 - Start the Commmand Line Interface (LoadBoy2000)
 From your command prompt (or euivalent console) run the progam (note that `python` is used here, but your local machine may use `py`, `py3`, or `python3`).
