@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import json
-import tensorflow as tf 
+import tensorflow as tf
 import os
 import re
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
