@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import json
-import tensorflow as tf
+import tensorflow as tf 
 import os
 import re
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -44,6 +44,17 @@ class MLHandler:
             self.standardfieldname_model = tf.keras.models.load_model(path)
         except Exception as e:
             print(f"[ERROR]: Could not load 'standardFieldName' model: {e}")
+
+        try:
+            path = os.path.join(
+                os.path.dirname(__file__),
+                "keras_models",
+                "predict_enumeration_conv1d2x_4fc_reg05.keras"
+            )
+            self.enumeration_model = tf.keras.models.load_model(path)
+        except Exception as e:
+            print(f"[ERROR]: Could not load 'enumeration' model: {e}")
+
 
         self.models_loaded = True
         print("[INFO]\tModels loaded successfully.")
@@ -93,8 +104,23 @@ class MLHandler:
         except Exception as e:
             print(f"[ERROR]: Could not load 'required' label encoder: {e}")
 
+        try:
+            path = os.path.join(
+                os.path.dirname(__file__),
+                "tokenizers",
+                "label_encoder_enumeration.pickle"
+            )
+            with open(path, 'rb') as handle:
+                self.label_encoder_enumeration = pickle.load(handle)
+        except Exception as e:
+            print(f"[ERROR]: Could not load 'enumeration' label encoder: {e}")
+
         self.tokenizers_loaded = True
         print("[INFO]\tTokenizers loaded successfully.")
+
+    @staticmethod
+    def remove_enumeration(x):
+        return re.sub('_[0-9]+$', '', x).rstrip('_') if isinstance(x, str)==True else np.nan
 
     @staticmethod
     def clean_asset_name(name):
@@ -114,14 +140,14 @@ class MLHandler:
             r"\bVAV RH\b": "VAVRH",
             r"\bVAVCO-": "VAVCO ",
             r"\bVAVRH-": "VAVRH ",
+            r"\bCO-": "VAVCO ",
+            r"\bRH-": "VAVRH ",
             r"WP-": "WP ",
         }
 
         for pattern, repl in replacements.items():
             name = re.sub(pattern, repl, name)
         return name
-
-
 
     @staticmethod
     def preprocess_inputs(inputs: pd.DataFrame, feature_cols: list) -> pd.Series:
@@ -135,6 +161,9 @@ class MLHandler:
 
         inputs = inputs[feature_cols].copy()
         inputs.fillna("", inplace=True)
+
+        if 'objectname' in inputs.columns:
+            inputs['objectname'] = inputs['objectname'].apply(lambda x: MLHandler.remove_enumeration(x))
 
         inputs.loc[:, 'inputs'] = inputs[feature_cols].apply(lambda x: " ".join(x.astype(str)), axis=1)
         inputs.loc[:, 'inputs'] = inputs.inputs.apply(lambda x: re.sub(SYMBOLS_PATTERN, "", x))
@@ -165,7 +194,8 @@ class MLHandler:
         class_probabilities = tf.round(class_probabilities * 100) / 100
         class_indices = tf.argmax(model_outputs, axis=1)
         class_labels = encoder.inverse_transform(class_indices)
-        return class_labels, class_probabilities
+        class_probabilities_np = class_probabilities.numpy()
+        return class_labels, class_probabilities_np
 
     @staticmethod
     def decode_sparse_categorical(model_outputs, encoder):
@@ -224,11 +254,13 @@ class MLHandler:
         inputs = self.preprocess_inputs(inputs=df, feature_cols=input_cols)
         inputs = self.encode_sequences(inputs, self.tokenizer)
 
+        # predict 'required'
         required_predicted = self.required_model.predict(inputs)
 
         df[header_map['required']], df[header_map['required_conf']] = self.decode_binary(required_predicted, self.label_encoder_required)
         required_idx = df.index[df[header_map['required']]=="YES"]
 
+        # predict 'standardFieldName'
         standardfieldname_predicted = self.standardfieldname_model.predict(inputs[required_idx])
 
         standardfieldname_labels, standardfieldname_probs, standardfieldname_alt = self.decode_sparse_categorical(standardfieldname_predicted, 
@@ -238,6 +270,19 @@ class MLHandler:
         df.loc[required_idx, header_map['standardFieldName_conf']] = standardfieldname_probs
         df.loc[required_idx, header_map['standardFieldName_alt']] = standardfieldname_alt
 
+        # predict 'enumeration'
+        enumeration_predicted = self.enumeration_model.predict(inputs[required_idx])
+        df.loc[required_idx, 'enumeration'], df.loc[required_idx, 'enumeration_conf'] = self.decode_binary(enumeration_predicted, self.label_encoder_enumeration)
+        df.loc[df['enumeration_conf'] < 0.95, 'enumeration'] = None
+        
+
+        # merge 'enumeration' into 'standardFieldName'
+        df.loc[df['enumeration'].isna()==False, header_map['standardFieldName']] = df.loc[df['enumeration'].isna()==False].apply(lambda x: x[header_map['standardFieldName']] + '_' + x['enumeration'] 
+                                                                                            if x['enumeration'] != '0' 
+                                                                                            else x[header_map['standardFieldName']], axis=1)
+        df.drop(columns=['enumeration','enumeration_conf'], inplace=True)
+
+        # predict 'generalType'
         generaltype_predicted = self.generalType_model.predict(inputs[required_idx])
         df.loc[required_idx, header_map['generalType']] = self.decode_multiclass_binary(generaltype_predicted, self.binarizer_generalType)
 

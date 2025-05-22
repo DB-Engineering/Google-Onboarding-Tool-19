@@ -499,7 +499,7 @@ class Loadsheet:
         try:
             self.create_pivot_table(output_filepath)
         except Exception as e:
-            print("Couldn't create a ivot table.")
+            print(f"Couldn't create a pivot table: {e}")
 
 
     def validate(

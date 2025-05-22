@@ -291,19 +291,19 @@ class Handler:
             
             df = pd.DataFrame.from_records(self.ls._data)
             df = ml_handler.get_predictions(df, std_input_cols)
-    
+
             print("[INFO]\tML normalization applied.")
         except Exception as e:
             print(f"[ERROR]\tML normalization failed: {e}.")
 
         # map units using standardFieldName mapping
-        # try:
-        print("[INFO]\tMapping units...")
-        mask = df['required']=='YES'
-        df.loc[mask, 'units'] = df.loc[mask, 'standardfieldname'].apply(abel.value_mapping.map_units)
-        print("[INFO]\tUnits mapped.")
-        # except Exception as e:
-        #     print(f"[ERROR]\tUnit mapping failed: {e}.")
+        try:
+            print("[INFO]\tMapping units...")
+            mask = df['required']=='YES'
+            df.loc[mask, 'units'] = df.loc[mask, 'standardfieldname'].apply(abel.value_mapping.map_units)
+            print("[INFO]\tUnits mapped.")
+        except Exception as e:
+            print(f"[ERROR]\tUnit mapping failed: {e}.")
 
         self.ls._update_header_map(df.columns)
 
