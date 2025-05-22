@@ -25,20 +25,23 @@ This repo contains the following critical pieces:
 	4. A rules engine for applying regular expression pattern matching
 	5. A representations class set for converting the loadsheet into ontology-usable objects
 
+### Requirements
+For complete functionality the tool requires python 3.11 or 3.12.
+
 ### Setup
 From your command prompt (or euivalent console) run the progam (note that `python` is used here, but your local machine may use `py`, `py3`, or `python3`).
 
 Windows:
 ```
-python -m venv .venv
+python -3.11 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 Linux:
 ```
-python -m venv .venv
-source/.venv/bin/activate
+python -3.11 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 

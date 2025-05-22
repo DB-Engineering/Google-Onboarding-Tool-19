@@ -52,7 +52,7 @@
     {
       "ruleName": "Asset Name Definition - AHU ()",
       "ruleField": "controlProgram",
-      "rulePattern": "((AHU|AC|ACU).\\d\\d?\\w?)",
+      "rulePattern": "((AHU|AC|ACU).\\d+\\w?)",
       "outputs": {
         "assetName": 1
       }
@@ -60,7 +60,7 @@
     {
       "ruleName": "Asset Name Definition - MAU ()",
       "ruleField": "controlProgram",
-      "rulePattern": "((MAU).\\d\\d?\\w?)",
+      "rulePattern": "((MAU).\\d+\\w?)",
       "outputs": {
         "assetName": 1
       }
@@ -68,7 +68,7 @@
     {
       "ruleName": "Asset Name Definition - FC ()",
       "ruleField": "controlProgram",
-      "rulePattern": "((FCU|FC|CRAC).\\d\\d?)",
+      "rulePattern": "((FCU|FC|CRAC).\\d+\\w?)",
       "outputs": {
         "assetName": 1
       }
@@ -76,7 +76,7 @@
     {
       "ruleName": "Asset Name Definition - AC ()-()",
       "ruleField": "controlProgram",
-      "rulePattern": "((AC|AHU).?\\d-\\d\\d?).*IDF",
+      "rulePattern": "((AC|AHU).?\\d-\\d+\\w?).*IDF",
       "outputs": {
         "assetName": 1
       }
@@ -84,7 +84,7 @@
     {
       "ruleName": "Asset Name Definition - FAN ()",
       "ruleField": "controlProgram",
-      "rulePattern": "((\\bTF\\b|\\bEF\\b|\\bLEF\\b|\\bDEF\\b|\\bKEF\\b).\\d)",
+      "rulePattern": "((\\bTF\\b|\\bEF\\b|\\bLEF\\b|\\bDEF\\b|\\bKEF\\b).\\d+)",
       "outputs": {
         "assetName": 1
       }

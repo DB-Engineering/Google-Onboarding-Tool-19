@@ -1,7 +1,6 @@
 pyyaml
 pyfiglet
 openpyxl
-pandas
 ruamel.yaml
 numpy==2.0.2
 pandas==2.2.3
