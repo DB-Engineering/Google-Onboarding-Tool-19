@@ -119,7 +119,7 @@ class Mapper(cmd.Cmd):
         import_type = inputs[0]
         path = inputs[1]
 
-        valid_first_arg = ['bms','loadsheet','ontology','payload']
+        valid_first_arg = ['bms','loadsheet','ontology', 'payload', 'bc']
 
         # Check that the first argument is a valid import argument.
         if inputs[0] not in valid_first_arg:
@@ -150,6 +150,11 @@ class Mapper(cmd.Cmd):
             print("[INFO]\tImporting payload...")
             self.handler.payload_path = path
             print("[INFO]\tPayload imported.")
+
+        elif import_type == 'bc':
+            print("[INFO]\tImporting building config...")
+            self.handler.bc_path = path
+            print("[INFO]\tBuilding config imported.")
 
     def do_normalize(self,args):
         """			Run the rules file given a specific rules filepath
@@ -202,9 +207,14 @@ class Mapper(cmd.Cmd):
         else:
             try: 
                 if len(inputs) == 2:
-                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path, output_path=inputs[1])
+                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
+                                                        payload_path=self.handler.payload_path, 
+                                                        building_config_path=self.handler.bc_path,
+                                                        output_path=inputs[1])
                 else:
-                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path)
+                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
+                                                         payload_path=self.handler.payload_path,
+                                                         building_config_path=self.handler.bc_path)
             except Exception as e:
                 print(f"[ERROR]\t Could not convert loadsheet: {e}.")
 

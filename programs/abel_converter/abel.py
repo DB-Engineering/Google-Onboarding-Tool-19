@@ -14,7 +14,7 @@
 
 import numpy as np
 import pandas as pd
-import ruamel.yaml as yaml
+from ruamel.yaml import YAML
 import json
 import uuid
 
@@ -31,6 +31,7 @@ class Abel():
             'Entities': {
                 'Entity Code': None,
                 'Entity Guid': None,
+                'Is Existing': None,
                 'Etag': None,
                 'Is Reporting': None,
                 'Cloud Device ID': None,
@@ -71,7 +72,8 @@ class Abel():
                 'Index': None,
                 'Issue': None
             },
-            'BMS Incorrect Units': None
+            'BMS Incorrect Units': None,
+            'Existing Virtual Entities': None
         }
 
         self.site_code = None
@@ -417,18 +419,35 @@ class Abel():
         self.PAYLOAD_IMPORTED = True
 
     def import_building_config(self, path):
+        yaml = YAML(typ='rt')
         with open(path) as f:
-            building_config = yaml.load(f, Loader=yaml.Loader)
-
-        entity_dict = {}
-
-        for key, val in building_config.items():
-            entity_dict[key] = val.get('etag')
+            building_config = yaml.load(f)
 
         # update etags:
         self.site_etag = building_config.get(self.site_guid).get('etag') if building_config.get(self.site_guid) else np.nan
-        self.entity_data['etag'] = self.entity_data['entityGuid'].apply(lambda x: building_config.get(x).get('etag') if building_config.get(x) else np.nan)
+        if type(self.entity_data)==pd.DataFrame:
+            self.entity_data['etag'] = self.entity_data['entityGuid'].apply(lambda x: building_config.get(x).get('etag') if building_config.get(x) else np.nan)
 
+        existing_virtual_entities = {}
+
+        # search for existing virtual entities and replace "new" virtual entities with existing ones
+        for key, val in building_config.items():
+            if val.get('links'):
+                existing_virtual_entities[val.get('code')] = {'guid' : key,
+                                                              'etag': val.get('etag')}
+        if type(self.entity_data)==pd.DataFrame:
+            self.entity_data['isExisting'] = ''
+            for key, val in existing_virtual_entities.items():
+                self.entity_data.loc[self.entity_data['entityCode']==key, 'isExisting'] = ['YES']
+                self.entity_data.loc[self.entity_data['entityCode']==key, 'entityGuid'] = val.get('guid')
+                self.entity_data.loc[self.entity_data['entityCode']==key, 'etag'] = val.get('etag')
+                self.entity_data.loc[self.entity_data['entityCode']==key, 'entityCode'] = key
+                self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityGuid'] = val.get('guid')
+                self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityCode'] = key
+        
+        ex_ve_df = pd.DataFrame.from_dict(existing_virtual_entities).transpose().reset_index().sort_values('index')
+        ex_ve_df.columns = ['code', 'guid', 'etag']
+        self.abel['Existing Virtual Entities'] = ex_ve_df.to_dict()
         
     def dump(self, path):
         """
@@ -455,6 +474,7 @@ class Abel():
         # Entity
         self.abel['Entities']['Entity Code'] = self.entity_data['entityCode']
         self.abel['Entities']['Entity Guid'] = self.entity_data['entityGuid']
+        self.abel['Entities']['Is Existing'] = self.entity_data['isExisting'].to_list()
         self.abel['Entities']['Etag'] = self.entity_data['etag']
         self.abel['Entities']['Is Reporting'] = self.entity_data['isReporting']
         self.abel['Entities']['Cloud Device ID'] = self.entity_data['cloudDeviceId']
