@@ -91,6 +91,7 @@ class Handler:
         self.last_loadsheet_path = ''
         self.last_rule_path = ''
         self.payload_path = ''
+        self.bc_path = None
 
     def build_ontology(self, ontology_root):
         """
@@ -147,7 +148,6 @@ class Handler:
                 print("[INFO]\tLoadsheet Imported")
                 self.loadsheet_built = True
                 self.last_loadsheet_path = loadsheet_path
-                print('\n')
 
             except Exception as e:
                 print("[ERROR]\tLoadsheet raised errors: {}".format(e))
@@ -336,7 +336,7 @@ class Handler:
         except Exception as e:
             print('[ERROR]\tExcel file not exported: {}'.format(e))
 
-    def export_abel_spreadsheet(self, excel_path, payload_path, output_path: Optional[str] = None):
+    def export_abel_spreadsheet(self, excel_path, payload_path, building_config_path: Optional[str] = None, output_path: Optional[str] = None):
         """converts loadsheet to ABEL spreadsheet.
 
         args:
@@ -346,6 +346,8 @@ class Handler:
         new_converter = abel.Abel()
         new_converter.import_loadsheet(excel_path)
         new_converter.import_payload(payload_path)
+        if building_config_path:
+            new_converter.import_building_config(building_config_path)
         new_converter.build()
         if not output_path:
             output_path = excel_path.replace('.xlsx', '_abel.xlsx')
