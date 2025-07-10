@@ -169,13 +169,18 @@ apply all
 apply close
 ```
 
-#### Step 12 - Export the loadsheet with applied matches
-TODO: write this section
+#### Step 12 - Export the loadsheet with applied matches for final type review
+```
+export excel '../loadsheet/Loadsheet_ALC_Normalized.xlsx'
+```
 
 #### Step 13 - Convert normalized loadsheet to ABEL spreadsheet:
-TODO: write more here, this command requires additional input of the raw deiscovery results
+Import discovery file (payload) and a building config (bc) for the tool to populate:
+- entity information: code, guid, etag
+- payload information: raw units and states
 ```
 import payload 'path/to/payload.csv'
+import bc 'path/to/bc.yaml'
 convert abel
 ```
 The ABEL formatted spreadsheet will be exported to the same directory as the loadsheet with suffix "_abel".
