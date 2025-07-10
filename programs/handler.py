@@ -90,8 +90,17 @@ class Handler:
         # Save some config info so that it can be reused
         self.last_loadsheet_path = ''
         self.last_rule_path = ''
-        self.payload_path = ''
+        self.payload_path = None
         self.bc_path = None
+
+    def validate_path(self, path, valid_file_types: list):
+        file_type = os.path.splitext(path)[1]
+
+        if not file_type in valid_file_types:
+            raise ValueError(f"Path '{path}' is not a valid file type. Allowed types: {', '.join(valid_file_types)}.")
+        if not os.path.exists(path):
+            raise ValueError(f"Loadsheet path '{path}' is not valid.")
+        return True
 
     def build_ontology(self, ontology_root):
         """
@@ -132,25 +141,17 @@ class Handler:
         # return
 
         try:
-            valid_file_types = {
-                '.xlsx': 'excel',
-                '.csv': 'bms_file'
-            }
-            file_type = os.path.splitext(loadsheet_path)[1]
+            if self.validate_path(loadsheet_path, ['.xlsx', '.csv']):
+                try:
+                    # Import the data into the loadsheet object.
+                    self.ls = load.Loadsheet.from_loadsheet(
+                        loadsheet_path, has_normalized_fields)
+                    print("[INFO]\tLoadsheet Imported")
+                    self.loadsheet_built = True
+                    self.last_loadsheet_path = loadsheet_path
 
-            assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
-            assert os.path.exists(
-                loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
-            try:
-                # Import the data into the loadsheet object.
-                self.ls = load.Loadsheet.from_loadsheet(
-                    loadsheet_path, has_normalized_fields)
-                print("[INFO]\tLoadsheet Imported")
-                self.loadsheet_built = True
-                self.last_loadsheet_path = loadsheet_path
-
-            except Exception as e:
-                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+                except Exception as e:
+                    print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
         except Exception as e:
             print("[ERROR]\tCould not load: {}".format(e))
@@ -178,23 +179,15 @@ class Handler:
         # return
 
         try:
-            valid_file_types = {
-                '.xlsx': 'excel',
-                '.csv': 'bms_file'
-            }
-            file_type = os.path.splitext(bms_path)[1]
+            if self.validate_path(bms_path, ['.xlsx', '.csv']):
+                try:
+                    # Import the data into the loadsheet object.
+                    self.ls = load.Loadsheet.from_bms(bms_path)
+                    print("[INFO]\tBMS Imported")
+                    self.loadsheet_built = True
 
-            assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
-            assert os.path.exists(
-                bms_path), f"Loadsheet path '{bms_path}' is not valid."
-            try:
-                # Import the data into the loadsheet object.
-                self.ls = load.Loadsheet.from_bms(bms_path)
-                print("[INFO]\tBMS Imported")
-                self.loadsheet_built = True
-
-            except Exception as e:
-                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+                except Exception as e:
+                    print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
         except Exception as e:
             print("[ERROR]\tCould not load: {}".format(e))
@@ -343,6 +336,19 @@ class Handler:
                 - excel_path: path to normalized loadsheet.
                 - payload_path: 
         """
+        if not payload_path:
+            print("[INFO]\tTo convert loadsheet to ABEL, please import payload.")
+            return
+
+        if not building_config_path:
+            print("[INFO]\tYou did not import a building config. Without it, ABEL sheet data will be incomplete.")
+            while True:
+                response = input("[INPUT]\tProceed without building config? (Y/N): ").strip()
+                if response in ("", "Y", "y"):
+                    break
+                elif response in ("N", "n"):
+                    return
+
         new_converter = abel.Abel()
         new_converter.import_loadsheet(excel_path)
         new_converter.import_payload(payload_path)
