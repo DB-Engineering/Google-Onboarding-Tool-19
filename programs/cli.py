@@ -148,13 +148,22 @@ class Mapper(cmd.Cmd):
 
         elif import_type == 'payload':
             print("[INFO]\tImporting payload...")
-            self.handler.payload_path = path
-            print("[INFO]\tPayload imported.")
+            try:
+                if self.handler.validate_path(path, ['.csv']):
+                    self.handler.payload_path = path
+                    print("[INFO]\tPayload imported.")
+            except Exception as e:
+                print("[ERROR]\tCould not load: {}".format(e))
 
         elif import_type == 'bc':
             print("[INFO]\tImporting building config...")
-            self.handler.bc_path = path
-            print("[INFO]\tBuilding config imported.")
+            try:
+                if self.handler.validate_path(path, ['.yaml']):
+                    self.handler.bc_path = path
+                    print("[INFO]\tBuilding config imported.")
+            except Exception as e:
+                print("[ERROR]\tCould not load: {}".format(e))
+
 
     def do_normalize(self,args):
         """			Run the rules file given a specific rules filepath

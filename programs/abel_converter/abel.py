@@ -250,7 +250,10 @@ class Abel():
         def get_states(active, inactive, multi):
             multi_enum = [(ix+1, val) for ix, val in enumerate(multi)] if multi else np.nan
             return [('active', active), ('inactive', inactive)] if all([active, inactive]) else multi_enum
-
+        
+        if not path:
+            return
+        
         payload_data = pd.read_csv(path, dtype={'externalId':'str'})
         payload_data.dropna(how='any', inplace=True)
         payload_data.loc[payload_data['entity_code'].isna()==False, 'code'] = 'EMPTY CODE: PLACEHOLDER'
@@ -474,7 +477,8 @@ class Abel():
         # Entity
         self.abel['Entities']['Entity Code'] = self.entity_data['entityCode']
         self.abel['Entities']['Entity Guid'] = self.entity_data['entityGuid']
-        self.abel['Entities']['Is Existing'] = self.entity_data['isExisting'].to_list()
+        if 'isExisting' in self.entity_data:
+            self.abel['Entities']['Is Existing'] = self.entity_data['isExisting'].to_list()
         self.abel['Entities']['Etag'] = self.entity_data['etag']
         self.abel['Entities']['Is Reporting'] = self.entity_data['isReporting']
         self.abel['Entities']['Cloud Device ID'] = self.entity_data['cloudDeviceId']
