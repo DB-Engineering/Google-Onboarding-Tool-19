@@ -447,10 +447,10 @@ class Abel():
                 self.entity_data.loc[self.entity_data['entityCode']==key, 'entityCode'] = key
                 self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityGuid'] = val.get('guid')
                 self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityCode'] = key
-        
-        ex_ve_df = pd.DataFrame.from_dict(existing_virtual_entities).transpose().reset_index().sort_values('index')
-        ex_ve_df.columns = ['code', 'guid', 'etag']
-        self.abel['Existing Virtual Entities'] = ex_ve_df.to_dict()
+        if len(existing_virtual_entities) > 0:
+            ex_ve_df = pd.DataFrame.from_dict(existing_virtual_entities).transpose().reset_index().sort_values('index')
+            ex_ve_df.columns = ['code', 'guid', 'etag']
+            self.abel['Existing Virtual Entities'] = ex_ve_df.to_dict()
         
     def dump(self, path):
         """
