@@ -18,6 +18,7 @@ import representations.representations
 from ml_normalize.ml_handler import MLHandler
 import ontology.ontology
 import loadsheet.loadsheet as load
+from loadsheet_validation_checks.loadsheet_validation_checks import LoadsheetValidationChecks
 from pretty import PrettyPrint
 import base64
 from typing import Optional
@@ -75,7 +76,7 @@ class Handler:
      - representations: for converting the loadsheet into ontology-usable objects
      - ontology: for asset validation and tMatching
      - loadsheet: for loadsheet and bms imports and exports
-                              as well as interaction with the rules engine
+       as well as interaction with the rules engine
     """
 
     def __init__(self):
@@ -90,17 +91,7 @@ class Handler:
         # Save some config info so that it can be reused
         self.last_loadsheet_path = ''
         self.last_rule_path = ''
-        self.payload_path = None
-        self.bc_path = None
-
-    def validate_path(self, path, valid_file_types: list):
-        file_type = os.path.splitext(path)[1]
-
-        if not file_type in valid_file_types:
-            raise ValueError(f"Path '{path}' is not a valid file type. Allowed types: {', '.join(valid_file_types)}.")
-        if not os.path.exists(path):
-            raise ValueError(f"Loadsheet path '{path}' is not valid.")
-        return True
+        self.payload_path = ''
 
     def build_ontology(self, ontology_root):
         """
@@ -117,7 +108,7 @@ class Handler:
             ont.validate_without_errors()
             self.ontology_built = True
             self.ontology = ont
-            print(f"[INFO]\tOntology built from '{ontology_root}'.")
+            print(f"[INFO]\tOntology imported from '{ontology_root}'.")
 
         except Exception as e:
             # Raise the exception to the user
@@ -141,17 +132,25 @@ class Handler:
         # return
 
         try:
-            if self.validate_path(loadsheet_path, ['.xlsx', '.csv']):
-                try:
-                    # Import the data into the loadsheet object.
-                    self.ls = load.Loadsheet.from_loadsheet(
-                        loadsheet_path, has_normalized_fields)
-                    print("[INFO]\tLoadsheet Imported")
-                    self.loadsheet_built = True
-                    self.last_loadsheet_path = loadsheet_path
+            valid_file_types = {
+                '.xlsx': 'excel',
+                '.csv': 'bms_file'
+            }
+            file_type = os.path.splitext(loadsheet_path)[1]
 
-                except Exception as e:
-                    print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+            assert file_type in valid_file_types, f"Path '{loadsheet_path}' is not a valid file type (only .xlsx and .csv allowed)."
+            assert os.path.exists(
+                loadsheet_path), f"Loadsheet path '{loadsheet_path}' is not valid."
+            try:
+                # Import the data into the loadsheet object.
+                self.ls = load.Loadsheet.from_loadsheet(
+                    loadsheet_path, has_normalized_fields)
+                print("[INFO]\tLoadsheet Imported")
+                self.loadsheet_built = True
+                self.last_loadsheet_path = loadsheet_path
+
+            except Exception as e:
+                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
         except Exception as e:
             print("[ERROR]\tCould not load: {}".format(e))
@@ -179,15 +178,23 @@ class Handler:
         # return
 
         try:
-            if self.validate_path(bms_path, ['.xlsx', '.csv']):
-                try:
-                    # Import the data into the loadsheet object.
-                    self.ls = load.Loadsheet.from_bms(bms_path)
-                    print("[INFO]\tBMS Imported")
-                    self.loadsheet_built = True
+            valid_file_types = {
+                '.xlsx': 'excel',
+                '.csv': 'bms_file'
+            }
+            file_type = os.path.splitext(bms_path)[1]
 
-                except Exception as e:
-                    print("[ERROR]\tLoadsheet raised errors: {}".format(e))
+            assert file_type in valid_file_types, f"Path '{bms_path}' is not a valid file type (only .xlsx and .csv allowed)."
+            assert os.path.exists(
+                bms_path), f"Loadsheet path '{bms_path}' is not valid."
+            try:
+                # Import the data into the loadsheet object.
+                self.ls = load.Loadsheet.from_bms(bms_path)
+                print("[INFO]\tBMS Imported")
+                self.loadsheet_built = True
+
+            except Exception as e:
+                print("[ERROR]\tLoadsheet raised errors: {}".format(e))
 
         except Exception as e:
             print("[ERROR]\tCould not load: {}".format(e))
@@ -199,7 +206,12 @@ class Handler:
 
         # Check that the ontology is built first.
         if not self.ontology_built:
-            print('[ERROR]\tOntology not built. Build it first.')
+            print('[ERROR]\tOntology not imported. Import it first.')
+            return
+
+        # Check that the loadsheet is imported first.
+        if not self.loadsheet_built:
+            print('[ERROR]\tLoadsheet not imported. Import it first.')
             return
 
         try:
@@ -284,25 +296,24 @@ class Handler:
             
             df = pd.DataFrame.from_records(self.ls._data)
             df = ml_handler.get_predictions(df, std_input_cols)
-
+    
             print("[INFO]\tML normalization applied.")
         except Exception as e:
             print(f"[ERROR]\tML normalization failed: {e}.")
 
         # map units using standardFieldName mapping
-        try:
-            print("[INFO]\tMapping units...")
-            mask = df['required']=='YES'
-            df.loc[mask, 'units'] = df.loc[mask, 'standardfieldname'].apply(abel.value_mapping.map_units)
-            print("[INFO]\tUnits mapped.")
-        except Exception as e:
-            print(f"[ERROR]\tUnit mapping failed: {e}.")
+        # try:
+        print("[INFO]\tMapping units...")
+        mask = df['required']=='YES'
+        df.loc[mask, 'units'] = df.loc[mask, 'standardfieldname'].apply(abel.value_mapping.map_units)
+        print("[INFO]\tUnits mapped.")
+        # except Exception as e:
+        #     print(f"[ERROR]\tUnit mapping failed: {e}.")
 
         self.ls._update_header_map(df.columns)
 
         df.columns = self.ls._to_std_headers(df.columns)
         self.ls._update_data_from_dataframe(df)
-
 
     def export_loadsheet(self, excel_path):
         """
@@ -329,31 +340,16 @@ class Handler:
         except Exception as e:
             print('[ERROR]\tExcel file not exported: {}'.format(e))
 
-    def export_abel_spreadsheet(self, excel_path, payload_path, building_config_path: Optional[str] = None, output_path: Optional[str] = None):
+    def export_abel_spreadsheet(self, excel_path, payload_path, output_path: Optional[str] = None):
         """converts loadsheet to ABEL spreadsheet.
 
         args:
                 - excel_path: path to normalized loadsheet.
                 - payload_path: 
         """
-        if not payload_path:
-            print("[INFO]\tTo convert loadsheet to ABEL, please import payload.")
-            return
-
-        if not building_config_path:
-            print("[INFO]\tYou did not import a building config. Without it, ABEL sheet data will be incomplete.")
-            while True:
-                response = input("[INPUT]\tProceed without building config? (Y/N): ").strip()
-                if response in ("", "Y", "y"):
-                    break
-                elif response in ("N", "n"):
-                    return
-
         new_converter = abel.Abel()
         new_converter.import_loadsheet(excel_path)
         new_converter.import_payload(payload_path)
-        if building_config_path:
-            new_converter.import_building_config(building_config_path)
         new_converter.build()
         if not output_path:
             output_path = excel_path.replace('.xlsx', '_abel.xlsx')
@@ -487,3 +483,105 @@ class Handler:
         """
         for asset_path in self.reps.assets:
             yield self.reps.assets[asset_path]
+
+    def loadsheet_checks(self):
+        # Check that the ontology is built first.
+        if not self.ontology_built:
+            print('[ERROR]\tOntology not imported. Import it first.')
+            return
+        
+         # Check that the loadsheet is imported first.
+        if not self.loadsheet_built:
+            print('[ERROR]\tLoadsheet not imported. Import it first.')
+            return
+        
+        try:
+            df = pd.read_excel(self.last_loadsheet_path)
+        except FileNotFoundError:
+            print(f"❌ File not found: {self.last_loadsheet_path}")
+            return
+        except PermissionError:
+            print(f"❌ Permission denied: The file '{self.last_loadsheet_path}' is likely open in another program. Please close it and try again.")
+            return
+        except Exception as e:
+            print(f"❌ Unexpected error while reading the file: {e}")
+            return
+
+        if not LoadsheetValidationChecks.validate_required_columns(df):
+            print("⛔ Stopping validation due to missing columns.")
+            return
+        else:
+            print("✅ Loadsheet contains the correct columns.")
+        if not LoadsheetValidationChecks.validate_no_leading_trailing_spaces(df):
+            print("⛔ Stopping validation due to leading/trailing spaces.")
+            return
+        else:
+            print("✅ No leading or trailing spaces found in cells.")
+        df_cleaned = LoadsheetValidationChecks.validate_required_column(df)
+        if df_cleaned is None:
+            print("\n⛔ Stopping validation due to invalid required column entry(s)")
+            return
+        else:
+            print("✅ All rows in 'required' column contain 'YES' or 'NO'.")
+        if not LoadsheetValidationChecks.validate_required_flag_on_populated_rows(df_cleaned):
+            print("⛔ Stopping validation due to improperly marked required flags.")
+            return
+        else:
+            print("✅ All rows containing asset data are correctly marked with required='YES'.")
+        if not LoadsheetValidationChecks.validate_required_fields_populated(df_cleaned):
+            print("⛔ Stopping validation due to missing required fields in required & not missing rows.")
+            return
+        else:
+            print("✅ All necessary columns populated where required='YES' and isMissing='NO'.")
+        if not LoadsheetValidationChecks.validate_missing_required_rows(df_cleaned):
+            print("⛔ Stopping validation due to invalid data on missing required rows.")
+            return
+        else:
+            print("✅ All necessary columns populated where required='YES' and isMissing='YES'.")
+        # if not LoadsheetValidationChecks.validate_all_standard_field_names(df_cleaned, self.ontology):
+        #     print("\n⛔ Stopping validation due to invalid standardFieldNames.")
+        #     return
+        # else:
+        #     print("✅ All standardFieldNames are valid.")
+        # if not LoadsheetValidationChecks.validate_units(df_cleaned, ontology):
+        #     print("\n⛔ Stopping validation due to undetectable units.")
+        #     return
+        # else:
+        #     print("✅ All units are valid and match with corresponding standardFieldNames.")
+        if not LoadsheetValidationChecks.validate_full_asset_path(df_cleaned):
+            print("⛔ Stopping validation due to invalid fullAssetPath entries.")
+            return
+        else:
+            print("✅ All fullAssetPaths are valid.")
+        if not LoadsheetValidationChecks.validate_object_type_for_command_status(df_cleaned):
+            print("⛔ Stopping validation due to objectType mismatches for control/status points.")
+            return
+        else:
+            print("✅ All binary standardFieldNames have binary objectType values.")
+        if not LoadsheetValidationChecks.validate_object_type_for_measurement_points(df_cleaned):
+            print("⛔ Stopping validation due to objectType mismatches for measurement points.")
+            return
+        else:
+            print("✅ All analog standardFieldNames have analog objectType values.")
+        if not LoadsheetValidationChecks.validate_alarm_types(df_cleaned):
+            print("⛔ Stopping validation due to invalid alarm type entries.")
+            return
+        else:
+            print("✅ All alarms have the correct BALM type.")
+        if not LoadsheetValidationChecks.validate_unique_standard_fields_per_asset(df_cleaned):
+            print("⛔ Stopping validation due to duplicate standardFieldNames within assets.")
+            return
+        else:
+            print("✅ No duplicate standardFieldNames within a single asset.")
+        if not LoadsheetValidationChecks.validate_unique_typename_per_asset(df_cleaned):
+            print("⛔ Stopping validation due to inconsistent typeName assignments per asset.")
+            return
+        else:
+            print("✅ All assetNames have exactly one typeName.")
+        # if not LoadsheetValidationChecks.validate_typename_matches_standard_fields(df_cleaned, ontology):
+        #     print("⛔ Stopping validation due to standardFieldName/typeName mismatches.")
+        #     return
+        # else:
+        #     print("✅ All standardFieldName sets are a 100% ontology match with their corresponding typeName.")
+        
+        print("\n🎉 All validations passed!")

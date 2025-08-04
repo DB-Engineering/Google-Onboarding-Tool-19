@@ -40,7 +40,7 @@ class Mapper(cmd.Cmd):
         super(Mapper, self).__init__()
 
         self.handler = handler.Handler()
-        self._clear()
+        self.do_clear(None)
         f = Figlet()
         intro_text = """============================================\n"""
         intro_text += """Welcome to the Loadsheet Builder. \n"""
@@ -69,45 +69,102 @@ class Mapper(cmd.Cmd):
 
         return matches
 
-    def _clear(self):
-        """ Clear the current console."""
-        os.system('cls' if os.name == 'nt' else 'clear')
+    def do_apply(self, args):
+        """
+        Apply the types one at a time.
+        Apply all to review all matches
+        Apply close to review inexact matches
+        while applying, Exit to exit apply loop
+        Usage: apply <all/close>
+        """
 
-    def do_license(self, args):
-        """			Show Apache License
-            usage: license """
+        inputs = args.split()
+        if len(inputs) != 1:
+            print("[ERROR]\tIncorrect number of inputs. See 'help' for more information on this function.")
+            return
 
-        l = "Copyright 2020 DB Engineering\n\n"
-        l += 'Licensed under the Apache License, Version 2.0 (the "License");\n'
-        l += "you may not use this file except in compliance with the License\n"
-        l += "You may obtain a copy of the License at\n"
-        l += "    http://www.apache.org/licenses/LICENSE-2.0\n"
-        l += "Unless required by applicable law or agreed to in writing, software\n"
-        l += 'distributed under the License is distributed on an "AS IS" BASIS,\n'
-        l += "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
-        l += "See the License for the specific language governing permissions and\n"
-        l += "limitations under the License.\n"
+        if not self.handler.matched:
+            print("[ERROR]\tMatches not performed. Run 'match' first.")
+            return
 
-        print(l)
+        question_types = ["INCOMPLETE"] #The types of match where we ask if apply or skip
+        if inputs[0] == "all":
+            question_types.append("EXACT")
+        # TODO: see if anyone can figure out how to move this to backend
+        for asset in self.handler.apply_matches():
+            self.do_clear(None)
+            match_type = asset.match.match_type
+            print("\n")
+            print(f"ASSET NAME: {asset.full_asset_name}")
+            print(f"ASSET TYPE: {asset.general_type}")
+            if match_type in question_types:
+                asset.match.print_comparison()
+                action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
+                if action == 'apply':
+                    asset.apply_match()
+                elif action == 'skip':
+                    continue
+                elif action == 'exit':
+                    break
+            elif match_type == "EXACT":
+                asset.apply_match()
+            else:
+                asset.match.print_comparison()
+                a = input("   >>> Functionality not yet added, press enter to continue")
 
+        print("[INFO]\tAll type matches applied. Use 'export' to export finished loadsheet.")
 
-    """Both quit and exit quit the application"""
-    def do_quit(self):
-        """ Quits LoadBoy """
-        return True
+        self.handler.ls._data = self.handler.reps.dump_to_data()
+    
+    def do_convert(self, args):
+        """
+        Converts current loadsheet into ABEL sheet.
+        Usage: convert abel
+        """
+        inputs = self._parse_args(args)
+        valid_first_arg = ['abel']
+        if inputs[0] not in valid_first_arg:
+            print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
+        elif not (self.handler.payload_path or self.handler.last_loadsheet_path):
+            print("[ERROR]\t Payload and valid loadsheet must be imported before export an ABEL spreadsheet.")
+        else:
+            try: 
+                if len(inputs) == 2:
+                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path, output_path=inputs[1])
+                else:
+                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, payload_path=self.handler.payload_path)
+            except Exception as e:
+                print(f"[ERROR]\t Could not convert loadsheet: {e}.")
 
-    def do_exit(self):
-        """ Exits LoadBoy """
-        return True
+    def do_export(self, args):
+        """			
+        Export the data as an excel file.
+        Usage: export excel <export filepath>
+        """
 
-    def do_clear(self):
-        """ Clear the current console. """
-        self._clear()
-        print(self.intro)
+        # Check that the right number of arguments are supplied.
+        inputs = self._parse_args(args)
+        if len(inputs) != 2:
+            print("[ERROR]\tNot the correct number of arguments. See help for details on export function.")
+            return
 
-    def do_import(self,args):
-        """			Facilitate the importing of data.
-            usage: import <bms|loadsheet|ontology> <file|folder> """
+        export_type = inputs[0]
+        export_path = inputs[1]
+        valid_first_arg = ['excel']
+
+        # Check that the first argument is a valid import argument.
+        if inputs[0] not in valid_first_arg:
+            print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
+            return
+
+        if export_type == 'excel':
+            self.handler.export_loadsheet(excel_path=export_path)
+    
+    def do_import(self, args):
+        """			
+        Facilitate the importing of data.
+        Usage: import <bms|loadsheet|ontology> <file|folder>
+        """
 
         # Check that the right number of arguments are supplied.
         inputs = self._parse_args(args)
@@ -148,26 +205,27 @@ class Mapper(cmd.Cmd):
 
         elif import_type == 'payload':
             print("[INFO]\tImporting payload...")
-            try:
-                if self.handler.validate_path(path, ['.csv']):
-                    self.handler.payload_path = path
-                    print("[INFO]\tPayload imported.")
-            except Exception as e:
-                print("[ERROR]\tCould not load: {}".format(e))
+            self.handler.payload_path = path
+            print("[INFO]\tPayload imported.")
+    
+    def do_match(self, _):
+        """			
+        Match the types to their nearest types.
+        Usage: match
+        """
 
-        elif import_type == 'bc':
-            print("[INFO]\tImporting building config...")
-            try:
-                if self.handler.validate_path(path, ['.yaml']):
-                    self.handler.bc_path = path
-                    print("[INFO]\tBuilding config imported.")
-            except Exception as e:
-                print("[ERROR]\tCould not load: {}".format(e))
+        #if not self.handler.validated:
+            #print("[ERROR]\tLoadsheet not validated. Run 'validate' before matching or reviewing.")
+            #return
 
-
-    def do_normalize(self,args):
-        """			Run the rules file given a specific rules filepath
-            usage: normalize <rules filepath>"""
+        self.handler.match_types()
+        print("[INFO]\tType matches added. Use 'review' to see outputs.")
+    
+    def do_normalize(self, args):
+        """			
+        Run the rules file given a specific rules filepath
+        Usage: normalize <rules filepath>
+        """
 
         inputs = self._parse_args(args)
 
@@ -177,65 +235,12 @@ class Mapper(cmd.Cmd):
 
         print("[INFO]\tApplying rules...")
         self.handler.apply_rules(inputs[0])
-
-    def do_ml_normalize(self,args):
-        """			Run the rules file given a specific rules filepath
-            usage: normalize <rules filepath>"""
-        print("[INFO]\tNormalizing...")
-        self.handler.apply_ml_normalization()
-
-    def do_export(self,args):
-        """			Export the data as an excel file.
-            usage: export <excel> <export filepath>"""
-
-        # Check that the right number of arguments are supplied.
-        inputs = self._parse_args(args)
-        if len(inputs) != 2:
-            print("[ERROR]\tNot the correct number of arguments. See help for details on export function.")
-            return
-
-        export_type = inputs[0]
-        export_path = inputs[1]
-        valid_first_arg = ['excel']
-
-        # Check that the first argument is a valid import argument.
-        if inputs[0] not in valid_first_arg:
-            print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
-            return
-
-        if export_type == 'excel':
-            self.handler.export_loadsheet(excel_path=export_path)
-
-    def do_convert(self, args):
-        inputs = self._parse_args(args)
-        valid_first_arg = ['abel']
-        if inputs[0] not in valid_first_arg:
-            print("[ERROR]\t'{}'' not a valid input. Valid inputs are {}".format(inputs[1],valid_first_arg))
-        elif not (self.handler.payload_path or self.handler.last_loadsheet_path):
-            print("[ERROR]\t Payload and valid loadsheet must be imported before export an ABEL spreadsheet.")
-        else:
-            try: 
-                if len(inputs) == 2:
-                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
-                                                        payload_path=self.handler.payload_path, 
-                                                        building_config_path=self.handler.bc_path,
-                                                        output_path=inputs[1])
-                else:
-                    self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
-                                                         payload_path=self.handler.payload_path,
-                                                         building_config_path=self.handler.bc_path)
-            except Exception as e:
-                print(f"[ERROR]\t Could not convert loadsheet: {e}.")
-
-    def do_validate(self,args):
-        """			Validate the loadsheet data against the ontology.
-            usage: validate"""
-
-        self.handler.validate_loadsheet()
-
+    
     def do_review(self, args):
-        """			Review GeneralTypes and Matches. Loadsheet must be validated
-            usage: review <optional generalType> """
+        """			
+        Review GeneralTypes and Matches. Loadsheet must be validated
+        Usage: review <optional generalType>
+        """
 
         if not self.handler.validated:
             print("[ERROR]\tLoadsheet isn't validated yet. Run 'validate' first.")
@@ -253,63 +258,65 @@ class Mapper(cmd.Cmd):
 
 
         self.handler.review_types(generalType)
+    
+    def do_clear(self, _):
+        """
+        Clears the current console.
+        Usage: clear
+        """
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(self.intro)
 
-    def do_match(self, args):
-        """			Match the types to their nearest types.
-            usage: match """
+    def do_license(self, _):
+        """	
+        Show Apache License
+        Usage: license
+        """
 
-        #if not self.handler.validated:
-            #print("[ERROR]\tLoadsheet not validated. Run 'validate' before matching or reviewing.")
-            #return
+        l = "Copyright 2020 DB Engineering\n\n"
+        l += 'Licensed under the Apache License, Version 2.0 (the "License");\n'
+        l += "you may not use this file except in compliance with the License\n"
+        l += "You may obtain a copy of the License at\n"
+        l += "    http://www.apache.org/licenses/LICENSE-2.0\n"
+        l += "Unless required by applicable law or agreed to in writing, software\n"
+        l += 'distributed under the License is distributed on an "AS IS" BASIS,\n'
+        l += "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+        l += "See the License for the specific language governing permissions and\n"
+        l += "limitations under the License.\n"
 
-        self.handler.match_types()
-        print("[INFO]\tType matches added. Use 'review' to see outputs.")
+        print(l)
+    
+    def do_ml_normalize(self, _):
+        """			
+        Run the rules file given a specific rules filepath
+        Usage: normalize <rules filepath>
+        """
 
-    def do_apply(self, args):
-        """			Apply the types one at a time.
-            Apply all to review all matches
-            Apply close to review inexact matches
-            while applying, Exit to exit apply loop
-            usage: apply <all/close>"""
+        print("[INFO]\tNormalizing...")
+        self.handler.apply_ml_normalization()
 
-        inputs = args.split()
-        if len(inputs) != 1:
-            print("[ERROR]\tIncorrect number of inputs. See 'help' for more information on this function.")
-            return
+    def do_quit(self, _):
+        """
+        Quits LoadBoy
+        Usage: quit
+        """
+        return True
+    
+    # def do_validate(self, _):   # This should be removed once the "do_loadsheet_checks" function is completed
+    #     """			
+    #     Validate the loadsheet data against the ontology.
+    #     Usage: validate
+    #     """
 
-        if not self.handler.matched:
-            print("[ERROR]\tMatches not performed. Run 'match' first.")
-            return
+    #     self.handler.validate_loadsheet()
 
-        question_types = ["INCOMPLETE"] #The types of match where we ask if apply or skip
-        if inputs[0] == "all":
-            question_types.append("EXACT")
-        # TODO: see if anyone can figure out how to move this to backend
-        for asset in self.handler.apply_matches():
-            self._clear()
-            match_type = asset.match.match_type
-            print("\n")
-            print(f"ASSET NAME: {asset.full_asset_name}")
-            print(f"ASSET TYPE: {asset.general_type}")
-            if match_type in question_types:
-                asset.match.print_comparison()
-                action = self._ask("   >>> Apply or Skip this Match? ", ["Apply", "Skip", "Exit"]).lower()
-                if action == 'apply':
-                    asset.apply_match()
-                elif action == 'skip':
-                    continue
-                elif action == 'exit':
-                    break
-            elif match_type == "EXACT":
-                asset.apply_match()
-            else:
-                asset.match.print_comparison()
-                a = input("   >>> Functionality not yet added, press enter to continue")
-
-        print("[INFO]\tAll type matches applied. Use 'export' to export finished loadsheet.")
-
-        self.handler.ls._data = self.handler.reps.dump_to_data()
-
+    def do_loadsheet_checks(self, _): 
+        """			
+        Run a series of validation checks on the loadsheet
+        Usage: loadsheet_checks
+        """
+        self.handler.loadsheet_checks()     
+    
     #input validator. returns one of the inputs, whichever the user gives
     def _ask(self, qn, answers=["yes", "no"]):
         inp = input(qn).lower()
@@ -319,8 +326,6 @@ class Mapper(cmd.Cmd):
             print(valid_answers)
             inp = input(qn)
         return inp
-
-
 
 if __name__ == '__main__':
     con = Mapper()
