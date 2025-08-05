@@ -231,7 +231,7 @@ class Mapper(cmd.Cmd):
         """			Validate the loadsheet data against the ontology.
             usage: validate"""
 
-        self.handler.validate_loadsheet()
+        self.handler.loadsheet_checks()
 
     def do_review(self, args):
         """			Review GeneralTypes and Matches. Loadsheet must be validated
