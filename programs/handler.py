@@ -18,6 +18,7 @@ import representations.representations
 from ml_normalize.ml_handler import MLHandler
 import ontology.ontology
 import loadsheet.loadsheet as load
+from loadsheet_validation_checks.loadsheet_validation_checks import LoadsheetValidationChecks
 from pretty import PrettyPrint
 import base64
 from typing import Optional
@@ -487,3 +488,101 @@ class Handler:
         """
         for asset_path in self.reps.assets:
             yield self.reps.assets[asset_path]
+
+    def loadsheet_checks(self):
+        # Check that the ontology is built first.
+        if not self.ontology_built:
+            print('[ERROR]\tOntology not imported. Import it first.')
+            return
+        
+         # Check that the loadsheet is imported first.
+        if not self.loadsheet_built:
+            print('[ERROR]\tLoadsheet not imported. Import it first.')
+            return
+        
+        try:
+            df = pd.read_excel(self.last_loadsheet_path)
+        except FileNotFoundError:
+            print(f"❌ File not found: {self.last_loadsheet_path}")
+            return
+        except PermissionError:
+            print(f"❌ Permission denied: The file '{self.last_loadsheet_path}' is likely open in another program. Please close it and try again.")
+            return
+        except Exception as e:
+            print(f"❌ Unexpected error while reading the file: {e}")
+            return
+
+        if not LoadsheetValidationChecks.validate_required_columns(df):
+            print("⛔ Stopping validation due to missing columns.")
+            return
+        else:
+            print("✅ Loadsheet contains the correct columns.")
+        if not LoadsheetValidationChecks.validate_no_leading_trailing_spaces(df):
+            print("⛔ Stopping validation due to leading/trailing spaces.")
+            return
+        else:
+            print("✅ No leading or trailing spaces found in cells.")
+        df_cleaned = LoadsheetValidationChecks.validate_required_column(df)
+        if df_cleaned is None:
+            print("\n⛔ Stopping validation due to invalid required column entry(s)")
+            return
+        else:
+            print("✅ All rows in 'required' column contain 'YES' or 'NO'.")
+        if not LoadsheetValidationChecks.validate_required_fields_populated(df_cleaned):
+            print("⛔ Stopping validation due to missing required fields in required & not missing rows.")
+            return
+        else:
+            print("✅ All necessary columns populated where required='YES' and isMissing='NO'.")
+        if not LoadsheetValidationChecks.validate_missing_required_rows(df_cleaned):
+            print("⛔ Stopping validation due to invalid data on missing required rows.")
+            return
+        else:
+            print("✅ All necessary columns populated where required='YES' and isMissing='YES'.")
+        # if not LoadsheetValidationChecks.validate_all_standard_field_names(df_cleaned, self.ontology):
+        #     print("\n⛔ Stopping validation due to invalid standardFieldNames.")
+        #     return
+        # else:
+        #     print("✅ All standardFieldNames are valid.")
+        # if not LoadsheetValidationChecks.validate_units(df_cleaned, ontology):
+        #     print("\n⛔ Stopping validation due to undetectable units.")
+        #     return
+        # else:
+        #     print("✅ All units are valid and match with corresponding standardFieldNames.")
+        if not LoadsheetValidationChecks.validate_full_asset_path(df_cleaned):
+            print("⛔ Stopping validation due to invalid fullAssetPath entries.")
+            return
+        else:
+            print("✅ All fullAssetPaths are valid.")
+        if not LoadsheetValidationChecks.validate_object_type_for_command_status(df_cleaned):
+            print("⛔ Stopping validation due to objectType mismatches for control/status points.")
+            return
+        else:
+            print("✅ All binary standardFieldNames have binary objectType values.")
+        if not LoadsheetValidationChecks.validate_object_type_for_measurement_points(df_cleaned):
+            print("⛔ Stopping validation due to objectType mismatches for measurement points.")
+            return
+        else:
+            print("✅ All analog standardFieldNames have analog objectType values.")
+        if not LoadsheetValidationChecks.validate_alarm_types(df_cleaned):
+            print("⛔ Stopping validation due to invalid alarm type entries.")
+            return
+        else:
+            print("✅ All alarms have the correct BALM type.")
+        if not LoadsheetValidationChecks.validate_unique_standard_fields_per_asset(df_cleaned):
+            print("⛔ Stopping validation due to duplicate standardFieldNames within assets.")
+            return
+        else:
+            print("✅ No duplicate standardFieldNames within a single asset.")
+        if not LoadsheetValidationChecks.validate_unique_typename_per_asset(df_cleaned):
+            print("⛔ Stopping validation due to inconsistent typeName assignments per asset.")
+            return
+        else:
+            print("✅ All assetNames have exactly one typeName.")
+        # if not LoadsheetValidationChecks.validate_typename_matches_standard_fields(df_cleaned, ontology):
+        #     print("⛔ Stopping validation due to standardFieldName/typeName mismatches.")
+        #     return
+        # else:
+        #     print("✅ All standardFieldName sets are a 100% ontology match with their corresponding typeName.")
+
+        self.validated = True
+        print("\n🎉 All validations passed!")
