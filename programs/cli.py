@@ -232,6 +232,7 @@ class Mapper(cmd.Cmd):
             usage: validate"""
 
         self.handler.loadsheet_checks()
+        self.handler.validate_loadsheet()
 
     def do_review(self, args):
         """			Review GeneralTypes and Matches. Loadsheet must be validated
@@ -258,9 +259,9 @@ class Mapper(cmd.Cmd):
         """			Match the types to their nearest types.
             usage: match """
 
-        #if not self.handler.validated:
-            #print("[ERROR]\tLoadsheet not validated. Run 'validate' before matching or reviewing.")
-            #return
+        if not self.handler.validated:
+            print("[ERROR]\tLoadsheet not validated. Run 'validate' before matching or reviewing.")
+            return
 
         self.handler.match_types()
         print("[INFO]\tType matches added. Use 'review' to see outputs.")
