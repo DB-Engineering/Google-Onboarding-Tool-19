@@ -122,12 +122,12 @@ class LoadsheetValidationChecks:
         """
 
         must_be_blank = [
-            "location", "controlProgram", "name", "type", "path",
+            "name", "type", "path",
             "deviceId", "objectType", "objectId", "objectName"
         ]
 
         must_not_be_blank = [
-            "building", "generalType", "typeName",
+            "building", "generalType",
             "assetName", "fullAssetPath", "standardFieldName"
         ]
 
