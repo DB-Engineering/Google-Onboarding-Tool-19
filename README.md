@@ -124,7 +124,7 @@ validate
 ```
 
 Validation will fail for common errors:
-- Duplicate `standardFieldName` and `fullAssetPath` combinations (i.e., two `zone_air_temperature_sensor` fields for VAV-123)
+- Duplicate `standardFieldName` and `assetName` combinations (i.e., two `zone_air_temperature_sensor` fields for VAV-123)
 - An invalid `standardFieldName` (i.e., not defined in the referenced ontology, mispelled, etc.)
 - Missing BACnet info in the columns (e.g., blank `objectId`)
 

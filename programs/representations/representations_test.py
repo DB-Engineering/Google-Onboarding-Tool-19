@@ -242,7 +242,7 @@ class TestRepresentationsMethods(ut.TestCase):
 					'path': 'p', 'deviceId': 'dID', 'objectType': 'oT', 'objectId': 'oID',
 					'objectName': 'oN', 'units': 'u', 'required': 'YES', 'manuallyMapped': '','isMissing': 'NO'
 					'building': 'bldg1', 'generalType': 'gT', 'typeName': '',
-					'assetName': 'asset1', 'fullAssetPath': 'asset_path1', 'standardFieldName': 'fN'}]
+					'assetName': 'asset1', 'standardFieldName': 'fN'}]
 
 		self.assertEqual(expected, dump)
 

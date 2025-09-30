@@ -30,6 +30,7 @@ class Abel():
             },
             'Entities': {
                 'Entity Code': None,
+                'Display Name': None,
                 'Entity Guid': None,
                 'Is Existing': None,
                 'Etag': None,
@@ -108,13 +109,16 @@ class Abel():
             'BI': 'binary-input',
             'MSV': 'multi-state-value'
         }
-        entity_fields = pd.read_excel(path).sort_values(['fullAssetPath', 'standardFieldName'])
-        entity_fields = entity_fields.loc[entity_fields['required']=='YES'].reset_index(drop=True)
-        self.abel['Loadsheet'] = entity_fields.to_dict()
+        loadsheet = pd.read_excel(path).sort_values(['assetName', 'standardFieldName'])
+        loadsheet = loadsheet.loc[loadsheet['required']=='YES', :]
+        loadsheet['fullAssetPath'] = loadsheet['building'] + ":" + loadsheet['generalType'] + ":" + loadsheet['assetName']
+        loadsheet['deviceId'] = loadsheet.groupby('fullAssetPath')['deviceId'].ffill()
+        loadsheet['deviceId'] = loadsheet.groupby('fullAssetPath')['deviceId'].bfill()
+        self.abel['Loadsheet'] = loadsheet.to_dict()
+
+        entity_fields = loadsheet.reset_index(drop=True)
         
         # Fill in blank deviceId and objectId for isMissing=YES
-        entity_fields['deviceId'] = entity_fields.groupby('fullAssetPath')['deviceId'].ffill()
-        entity_fields['deviceId'] = entity_fields.groupby('fullAssetPath')['deviceId'].bfill()
         entity_fields.loc[(entity_fields['isMissing']=="YES") & (entity_fields['objectType'].isna()==True), 'objectType'] = 'FV'
         mask = entity_fields['isMissing']=="YES"
         entity_fields.loc[mask, 'objectId'] = np.random.randint(10000, 11000, size=mask.sum())
@@ -136,19 +140,19 @@ class Abel():
         # Entity level data
         #
         # Virtual Entities
-        deviceid_fullap = self.entity_fields_data[['deviceId', 'fullAssetPath']].drop_duplicates()
-        count_id_by_fullap = deviceid_fullap.groupby(['fullAssetPath'], as_index=False).count()
+        deviceid_fullap = loadsheet[['deviceId', 'assetName', 'fullAssetPath']].drop_duplicates()
+        count_id_by_fullap = deviceid_fullap.groupby(['fullAssetPath', 'assetName'], as_index=False).count()
         count_fullap_by_id = deviceid_fullap.groupby(['deviceId'], as_index=False).count()
         virtual_fullap = count_id_by_fullap.loc[count_id_by_fullap['deviceId'] > 1, 'fullAssetPath'].to_list()
         virtual_deviceid = count_fullap_by_id.loc[count_fullap_by_id['fullAssetPath'] > 1, 'deviceId'].to_list()
 
-        virtual_entities = self.entity_fields_data[(self.entity_fields_data['deviceId'].isin(virtual_deviceid)==True)
-                                                 | (self.entity_fields_data['fullAssetPath'].isin(virtual_fullap)==True)]\
-                                                    [['fullAssetPath', 'typeName']]\
-                                                    .drop_duplicates()\
-                                                    .rename(columns={'fullAssetPath': 'entityCode',
-                                                                     'typeName': 'dboEntityTypeName'})\
-                                                    .sort_values('entityCode')
+        virtual_entities = loadsheet[(loadsheet['deviceId'].isin(virtual_deviceid)==True)
+                                        | (loadsheet['fullAssetPath'].isin(virtual_fullap)==True)]\
+                                        [['fullAssetPath', 'typeName']]\
+                                        .drop_duplicates()\
+                                        .rename(columns={'fullAssetPath': 'entityCode',
+                                                         'typeName': 'dboEntityTypeName'})\
+                                        .sort_values('entityCode')
 
         virtual_entities['isReporting'] = 'FALSE'
         virtual_entities['dboNamespace'] = 'HVAC'
@@ -161,8 +165,8 @@ class Abel():
 
         # Reporting Entities
         # Entities that are associated with multiple fullassetpaths are Passthrough
-        reporting_passthrough = deviceid_fullap[(deviceid_fullap['deviceId'].isin(virtual_deviceid)==True)
-                                                  | (deviceid_fullap['fullAssetPath'].isin(virtual_fullap)==True)][['deviceId']]\
+        reporting_passthrough = loadsheet[(loadsheet['deviceId'].isin(virtual_deviceid)==True)
+                                                  | (loadsheet['fullAssetPath'].isin(virtual_fullap)==True)][['deviceId']]\
                                                   .drop_duplicates()
         reporting_passthrough['etag'] = np.nan
         reporting_passthrough['isReporting'] = 'TRUE'
@@ -171,17 +175,11 @@ class Abel():
         reporting_passthrough['dboEntityTypeName'] = 'PASSTHROUGH'
 
         # Entities that are associated with one and only one fullassetpath are Passthrough
-        reporting_not_passthrough = deviceid_fullap[(deviceid_fullap['deviceId'].isin(virtual_deviceid)==False)
-                                                  & (deviceid_fullap['fullAssetPath'].isin(virtual_fullap)==False)][['deviceId']]\
-                                                  .drop_duplicates()
-
-        not_passthrough_data = self.entity_fields_data[['deviceId', 'typeName']].drop_duplicates()
-        reporting_not_passthrough = reporting_not_passthrough.merge(not_passthrough_data,
-                                                                    how='left',
-                                                                    on=['deviceId'],
-                                                                    left_index=False,
-                                                                    right_index=False)\
-                                                             .rename(columns={'typeName': 'dboEntityTypeName'})
+        reporting_not_passthrough = loadsheet[(loadsheet['deviceId'].isin(virtual_deviceid)==False)
+                                                  & (loadsheet['fullAssetPath'].isin(virtual_fullap)==False)][['deviceId', 'assetName', 'typeName']]\
+                                                  .drop_duplicates()\
+                                                  .rename(columns={'typeName': 'dboEntityTypeName',
+                                                                   'assetName': 'displayName'})
         reporting_not_passthrough['isReporting'] = 'TRUE'
         reporting_not_passthrough['dboNamespace'] = 'HVAC'
         reporting_not_passthrough['etag'] = np.nan
@@ -189,6 +187,7 @@ class Abel():
         reporting_not_passthrough['dboGeneralType'] = reporting_not_passthrough['dboEntityTypeName'].apply(lambda x: x.split('_')[0])
 
         self.entity_data = pd.concat([reporting_passthrough, reporting_not_passthrough, virtual_entities], axis=0)
+        # self.entity_data.loc[() & (), 'displayName']
 
         self.LOADSHEET_IMPORTED = True
         
@@ -342,7 +341,7 @@ class Abel():
                                                                                                             x['isReporting']=='TRUE']) else x['entityGuid'], axis=1)
         self.entity_data['Operation'] = np.nan
         self.entity_data.drop(['phred_cloudDeviceId', 'phred_entityCode', 'phred_reportingEntityGuid'], axis=1, inplace=True)
-        self.entity_data = self.entity_data[['entityCode', 'deviceId', 'entityGuid', 'etag', 'isReporting', 'cloudDeviceId', 'dboNamespace', 'dboGeneralType', 'dboEntityTypeName', 'Operation']]
+        self.entity_data = self.entity_data[['entityCode', 'displayName', 'deviceId', 'entityGuid', 'etag', 'isReporting', 'cloudDeviceId', 'dboNamespace', 'dboGeneralType', 'dboEntityTypeName', 'Operation']]
 
 
         #### UPDATE ENTITY FIELDS DATA ###
@@ -476,6 +475,7 @@ class Abel():
 
         # Entity
         self.abel['Entities']['Entity Code'] = self.entity_data['entityCode']
+        self.abel['Entities']['Display Name'] = self.entity_data['displayName']
         self.abel['Entities']['Entity Guid'] = self.entity_data['entityGuid']
         if 'isExisting' in self.entity_data:
             self.abel['Entities']['Is Existing'] = self.entity_data['isExisting'].to_list()

@@ -555,13 +555,13 @@ class Ontology:
 	def check_field(self,field_name):
 		""" Check that a field is defined in the ontology. Dont worry about enumerations at the end. """
 		try:
+			# Remove enumerations.
 			subfields = field_name.split('_')
 			for subfield in subfields:
 				if subfield.isdigit():
 					subfields.remove(subfield)
 			field_name = '_'.join(subfields)
-			# Remove enumerations.
-
+			
 			self.fields.get_field(field_name)
 			return True
 		except:
