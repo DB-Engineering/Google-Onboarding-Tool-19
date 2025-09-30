@@ -206,13 +206,11 @@ class Handler:
         try:
 
             # Validate the loadsheet
-            print('[INFO]\tValidating loadsheet.')
             self.ls.validate()
-            print('[INFO]\tValidation complete, no errors.')
 
             try:
                 # Convert the loadsheet to validation
-                print('[INFO]\tConverting loadsheet into asset representations.')
+                print('\n[INFO]\tConverting loadsheet into asset representations.')
                 self.reps = representations.representations.Assets()
                 self.reps.load_from_data(self.ls._data)
                 print('[INFO]\tAsset representations built.')
@@ -548,11 +546,6 @@ class Handler:
         #     return
         # else:
         #     print("✅ All units are valid and match with corresponding standardFieldNames.")
-        if not LoadsheetValidationChecks.validate_full_asset_path(df_cleaned):
-            print("⛔ Stopping validation due to invalid fullAssetPath entries.")
-            return
-        else:
-            print("✅ All fullAssetPaths are valid.")
         if not LoadsheetValidationChecks.validate_object_type_for_command_status(df_cleaned):
             print("⛔ Stopping validation due to objectType mismatches for control/status points.")
             return

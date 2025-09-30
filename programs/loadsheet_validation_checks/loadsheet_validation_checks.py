@@ -14,7 +14,7 @@ class LoadsheetValidationChecks:
             "location", "controlProgram", "name", "type", "path", "deviceId", 
             "objectType", "objectId", "objectName", "units", "required", 
             "isMissing", "manuallyMapped", "building", "generalType", 
-            "typeName", "assetName", "fullAssetPath", "standardFieldName"
+            "typeName", "assetName", "standardFieldName"
         ]
         missing_columns = [col for col in required_columns if col not in df.columns]
 
@@ -32,10 +32,9 @@ class LoadsheetValidationChecks:
         """
 
         columns_to_check = [
-            "location", "controlProgram", "name", "type", "path", "deviceId",
-            "objectType", "objectId", "objectName", "units", "required",
+            "deviceId", "objectType", "objectId", "objectName", "units", "required",
             "isMissing", "manuallyMapped", "building", "generalType",
-            "typeName", "assetName", "fullAssetPath", "standardFieldName"
+            "typeName", "assetName", "standardFieldName"
         ]
         failed_rows = []
 
@@ -85,8 +84,8 @@ class LoadsheetValidationChecks:
         """
 
         columns_to_check = [ 
-            "location", "controlProgram", "name", "type", "path",
-            "deviceId", "objectType", "objectId"
+            "deviceId", "objectType", "objectId", "building", "generalType", "units",
+            "assetName", "standardFieldName"
         ]
 
         failed_rows = []
@@ -128,7 +127,7 @@ class LoadsheetValidationChecks:
 
         must_not_be_blank = [
             "building", "generalType",
-            "assetName", "fullAssetPath", "standardFieldName"
+            "assetName", "standardFieldName"
         ]
 
         failed_rows = []
@@ -260,39 +259,6 @@ class LoadsheetValidationChecks:
                 print(f"Row {excel_row}: standardFieldName='{field}', units='{unit_val}'")
 
         if invalid_unit_rows:
-            return False
-        else:
-            return True
-
-    def validate_full_asset_path(df):
-        """
-        Checks that 'fullAssetPath' follows the format 'building:generalType:assetName' for all rows where 'required' = 'YES'.
-        """
-
-        if 'fullAssetPath' not in df.columns:
-            print("❌ Error: 'fullAssetPath' column not found.")
-            return False
-
-        required_yes = df[df['required_cleaned'] == 'YES']
-        invalid_rows = []
-
-        for idx, row in required_yes.iterrows():
-            building = str(row.get('building', '')).strip()
-            general_type = str(row.get('generalType', '')).strip()
-            asset_name = str(row.get('assetName', '')).strip()
-            expected_path = f"{building}:{general_type}:{asset_name}"
-
-            actual_path = str(row.get('fullAssetPath', '')).strip()
-            excel_row = idx + 2
-
-            # Check if actual_path matches expected_path exactly
-            if actual_path != expected_path:
-                invalid_rows.append((excel_row, actual_path or "<BLANK>", expected_path))
-
-        if invalid_rows:
-            print("❌ Invalid 'fullAssetPath' entries (expected 'building:generalType:assetName'):")
-            for excel_row, actual, expected in invalid_rows:
-                print(f"Row {excel_row}: actual='{actual}', expected='{expected}'")
             return False
         else:
             return True
@@ -484,10 +450,10 @@ class LoadsheetValidationChecks:
     def validate_required_flag_on_populated_rows(df):
         """
         Ensures that if any of the core identifying fields ('generalType', 'typeName', 'assetName',
-        'fullAssetPath', or 'standardFieldName') are populated, then the 'required' column must be set to 'YES'.
+        or 'standardFieldName') are populated, then the 'required' column must be set to 'YES'.
         """
         
-        check_fields = ['generalType', 'typeName', 'fullAssetPath', 'standardFieldName']
+        check_fields = ['generalType', 'typeName', 'standardFieldName']
         failed_rows = []
 
         for idx, row in df.iterrows():

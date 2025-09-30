@@ -51,7 +51,7 @@ class Asset:
 	and serves as a wrapper for the Field class, allowing user to add/update fields directly on the
 	asset object. """
 
-	def __init__(self,building,general_type,type_name,asset_name,full_asset_name):
+	def __init__(self,building,general_type,type_name,asset_name):
 		"""
 		Initialize the model
 
@@ -60,7 +60,6 @@ class Asset:
 			- general_type: string asset type e.g. VAV
 			- type_name: Unique name for type definitions
 			- asset_name: string physical name
-			- full_asset_name: BMS internal name
 
 		returns: new asset objects
 		"""
@@ -69,7 +68,7 @@ class Asset:
 		self.general_type = general_type
 		self.type_name = type_name
 		self.asset_name = asset_name
-		self.full_asset_name = full_asset_name
+		self.full_asset_name = '{}:{}:{}'.format(self.building,self.general_type,self.asset_name)
 		self.fields = {}
 		self.matched = False
 		self.placeholderid = 10000
@@ -295,7 +294,7 @@ class Assets:
 		self.determined_types = {}
 		self.ununsed_data = []
 
-	def add_asset(self,building,general_type,type_name,asset_name,full_asset_name):
+	def add_asset(self,building,general_type,type_name,asset_name):
 		"""
 		Update an asset or add it if it doesnt exist yet.
 
@@ -304,38 +303,37 @@ class Assets:
 			- general_type: string asset type e.g. VAV
 			- type_name: unique name for type definitions
 			- asset_name: string physical name
-			- full_asset_name: BMS internal name
 		"""
-		assert full_asset_name not in self.assets, "Asset {} already exists.".format(full_asset_name)
-		asset = Asset(building,general_type,type_name,asset_name,full_asset_name)
-		self.assets[full_asset_name] = asset
+		assert asset_name not in self.assets, "Asset {} already exists.".format(asset_name)
+		asset = Asset(building,general_type,type_name,asset_name)
+		self.assets[asset_name] = asset
 
-	def remove_asset(self,full_asset_name):
+	def remove_asset(self,asset_name):
 		"""
 		Remove an asset.
 
 		args:
-			- full_asset_name: name of asset to remove
+			- asset_name: name of asset to remove
 		"""
-		assert full_asset_name in self.assets, "Asset {} does not exist.".format(full_asset_name)
-		del self.assets[full_asset_name]
+		assert asset_name in self.assets, "Asset {} does not exist.".format(asset_name)
+		del self.assets[asset_name]
 
-	def update_type(self,full_asset_name,type_name):
+	def update_type(self,asset_name,type_name):
 		"""
 		Update type of a given asset.
 
 		args:
-			- full_asset_name: name of asset to update
+			- asset_name: name of asset to update
 			- type_name: string type name to update asset to match
 		"""
-		self.assets[full_asset_name].update_type(type_name)
+		self.assets[asset_name].update_type(type_name)
 
-	def add_field(self,full_asset_name,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing="NO"):
+	def add_field(self,asset_name,field_name,bms_info,bacnet_address,manually_mapped=False,is_missing="NO"):
 		"""
 		Add a field.
 
 		args:
-			- full_asset_name: name of asset to add field to
+			- asset_name: name of asset to add field to
 			- field_name: string point name
 			- bms_info: dictionary, describing location, controlProgram,
 						name, path, and type
@@ -344,28 +342,28 @@ class Assets:
 			- manuallyMapped: flag if field is manually filled in, set false by default
 			- isMissing: flag is field is added as MISSING
 		"""
-		self.assets[full_asset_name].add_field(field_name,bms_info,bacnet_address,manually_mapped,is_missing)
+		self.assets[asset_name].add_field(field_name,bms_info,bacnet_address,manually_mapped,is_missing)
 
-	def remove_field(self,full_asset_name,field_name):
+	def remove_field(self,asset_name,field_name):
 		"""
 		Remove a field.
 
 		args:
-			- full_asset_name: name  of asset to remove field from
+			- asset_name: name  of asset to remove field from
 			- field_name: string point name to be removed
 		"""
-		self.assets[full_asset_name].remove_field(field_name)
+		self.assets[asset_name].remove_field(field_name)
 
-	def get_fields(self,full_asset_name):
+	def get_fields(self,asset_name):
 		"""
 		Get fields for an asset.
 
 		args:
-			- full_asset_name: name of asset ot get fields of
+			- asset_name: name of asset ot get fields of
 
 		returns: list of field objects
 		"""
-		return self.assets[full_asset_name].get_fields()
+		return self.assets[asset_name].get_fields()
 
 	def get_all_asset_fields(self):
 		"""
@@ -381,16 +379,16 @@ class Assets:
 
 		return unique_fields
 
-	def get_general_type(self,full_asset_name):
+	def get_general_type(self,asset_name):
 		"""
 		Get the general type for the asset.
 
 		args:
-			- full_asset_name: asset to get general_type of
+			- asset_name: asset to get general_type of
 
 		returns: general type of asset
 		"""
-		return self.assets[full_asset_name].get_general_type()
+		return self.assets[asset_name].get_general_type()
 
 	def get_general_types(self):
 		"""
@@ -405,16 +403,16 @@ class Assets:
 
 		return general_types
 
-	def dump_asset(self,full_asset_name):
+	def dump_asset(self,asset_name):
 		"""
 		Dump asset contents.
 
 		args:
-			- full_asset_name: asset to get dump
+			- asset_name: asset to get dump
 
 		results: full asset dump
 		"""
-		dump_details = self.assets[full_asset_name].dump()
+		dump_details = self.assets[asset_name].dump()
 		return dump_details
 
 	def dump_all_assets(self):
@@ -437,13 +435,12 @@ class Assets:
 			- data_row: row of data to add
 		"""
 
-		if data_row['fullassetpath'] not in self.assets:
+		if data_row['assetname'] not in self.assets:
 			self.add_asset(
 						data_row['building'],
 						data_row['generaltype'],
 						data_row['typename'],
-						data_row['assetname'],
-						data_row['fullassetpath']
+						data_row['assetname']
 					)
 
 		bms_info = {
@@ -463,7 +460,7 @@ class Assets:
 				'units':data_row['units']
 			}
 
-		self.add_field(data_row['fullassetpath'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'],data_row['ismissing'])
+		self.add_field(data_row['assetname'],data_row['standardfieldname'],bms_info,bacnet_address,data_row['manuallymapped'],data_row['ismissing'])
 
 	def load_from_data(self,data):
 		"""
@@ -490,7 +487,6 @@ class Assets:
 		out_data = []
 		for asset in data:
 			for field in data[asset]['fields']:
-				fullAssetPath = data[asset]['full_asset_name']
 				assetName = data[asset]['asset_name']
 				building = data[asset]['building']
 				generalType = data[asset]['general_type']
@@ -526,7 +522,6 @@ class Assets:
 					'generaltype':generalType,
 					'typename':typeName,
 					'assetname':assetName,
-					'fullassetpath':fullAssetPath,
 					'standardfieldname':standardFieldName
 				}
 				out_data.append(row)
@@ -610,62 +605,22 @@ class Assets:
 
 		print("[INFO]\tNo representation errors!")
 
-'''
-	#functionality not complete
-	#removed 20200727 akoltko
-	def dump_to_steve_format(self):
-		"""
-		Dump the data content to the Steve format.
-
-		args:
-			-
-
-		"""
-		# TODO: Add functionality for this to CLI and Handler
-		# Output for STEVE format.
-		steve_headers = (
-				'location','controlProgram','name','type','objectType','deviceId','objectName','units','path',
-				'required','bacnetAvailable','building','generalType','assetName','fullAssetPath','standardFieldName'
-			)
-
-		data = self.dump_to_data()
-
-		s = '\t'
-		print(s.join(steve_headers))
-		for row in data:
-			out_row = {}
-			for i in steve_headers:
-				if i in row:
-					if i == 'objectType':
-						out_row['objectType'] = row['objectType'] +':'+str(row['objectId'])
-					elif i == 'deviceId':
-						out_row['deviceId'] = 'DEV:' + str(row['deviceId'])
-					else:
-						out_row[i] = row[i]
-				else:
-					out_row[i] = ''
-
-
-			s = '\t'
-			print(s.join(out_row.values()))
-'''
-
 
 
 ### Test block.
 if __name__ == '__main__':
 
 	rows = [
-			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)','name': 'Comp Start', 'type': 'BMBO','path': '#1118th_ac-5-1/comp', 'deviceId': 2790529, 'objectType': 'BO', 'objectId': 1, 'objectName': '', 'units': 'no-units','required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU','typeName': None,'assetName': 'AC-5-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AC-5-1','standardFieldName': 'compressor_run_command'},
-			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Fan S/S', 'type': 'BMBO', 'path': '#1118th_ac-5-1/fan', 'deviceId': 2790529, 'objectType': 'BO', 'objectId': 0, 'objectName': ' ', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AC-5-1', 'standardFieldName': 'discharge_fan_run_command'},
-			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Fan Status', 'type': 'BBV', 'path': '#1118th_ac-5-1/fan_status', 'deviceId': 300056, 'objectType': 'BV', 'objectId': 268, 'objectName': 'fan_status_28', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AC-5-1', 'standardFieldName': 'discharge_fan_run_status'},
-			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Room Temp', 'type': 'BAV', 'path': '#1118th_ac-5-1/zone_temp', 'deviceId': 300056, 'objectType': 'AV', 'objectId': 627, 'objectName': 'zone_temp_28', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AC-5-1', 'standardFieldName': 'zone_air_temperature_sensor'},
-			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Occupied Setpoint', 'type': 'BMAV', 'path': '#1118th_ac-5-1/occ_setpt', 'deviceId': 2790529, 'objectType': 'AV', 'objectId': 90, 'objectName': ' ', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AC-5-1', 'standardFieldName': 'zone_air_cooling_temperature_sensor'},
-			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Cool Request', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_cl_req', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 19, 'objectName': 'total_cl_req_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AHU-10-1', 'standardFieldName': 'cooling_request_count'},
-			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Zone Airflow', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_zone_flow', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 21, 'objectName': 'total_zone_flow_1', 'units': 'cubic-feet-per-minute', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AHU-10-1', 'standardFieldName': 'supply_air_flowrate_sensor'},
-			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Airflow Requests', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_air_req', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 18, 'objectName': 'total_air_req_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AHU-10-1', 'standardFieldName': 'pressurization_request_count'},
-			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Supply Fan Status', 'type': 'BBI', 'path': '#1118th_ahu_10_1/sf_status', 'deviceId': 303701, 'objectType': 'BI', 'objectId': 9, 'objectName': 'sf_status_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AHU-10-1', 'standardFieldName': 'supply_fan_run_status'},
-			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1 TPI', 'name': 'CW Temp', 'type': 'BAV', 'path': '#1118th_ahu-10-1_tpi/cwt', 'deviceId': 300084, 'objectType': 'AV', 'objectId': 20, 'objectName': 'cwt_2', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'fullAssetPath': 'US-NYC-9TH:FCU:AHU-10-1', 'standardFieldName': 'chilled_supply_water_temperature_sensor'}
+			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)','name': 'Comp Start', 'type': 'BMBO','path': '#1118th_ac-5-1/comp', 'deviceId': 2790529, 'objectType': 'BO', 'objectId': 1, 'objectName': '', 'units': 'no-units','required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU','typeName': None,'assetName': 'AC-5-1','standardFieldName': 'compressor_run_command'},
+			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Fan S/S', 'type': 'BMBO', 'path': '#1118th_ac-5-1/fan', 'deviceId': 2790529, 'objectType': 'BO', 'objectId': 0, 'objectName': ' ', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'standardFieldName': 'discharge_fan_run_command'},
+			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Fan Status', 'type': 'BBV', 'path': '#1118th_ac-5-1/fan_status', 'deviceId': 300056, 'objectType': 'BV', 'objectId': 268, 'objectName': 'fan_status_28', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'standardFieldName': 'discharge_fan_run_status'},
+			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Room Temp', 'type': 'BAV', 'path': '#1118th_ac-5-1/zone_temp', 'deviceId': 300056, 'objectType': 'AV', 'objectId': 627, 'objectName': 'zone_temp_28', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'standardFieldName': 'zone_air_temperature_sensor'},
+			{'location': '/One city block/111 8th/5th Floor', 'controlProgram': 'AC-5-1 (Mail Room)', 'name': 'Occupied Setpoint', 'type': 'BMAV', 'path': '#1118th_ac-5-1/occ_setpt', 'deviceId': 2790529, 'objectType': 'AV', 'objectId': 90, 'objectName': ' ', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AC-5-1', 'standardFieldName': 'zone_air_cooling_temperature_sensor'},
+			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Cool Request', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_cl_req', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 19, 'objectName': 'total_cl_req_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'standardFieldName': 'cooling_request_count'},
+			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Zone Airflow', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_zone_flow', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 21, 'objectName': 'total_zone_flow_1', 'units': 'cubic-feet-per-minute', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'standardFieldName': 'supply_air_flowrate_sensor'},
+			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Total Airflow Requests', 'type': 'BAV', 'path': '#1118th_ahu_10_1/total_air_req', 'deviceId': 303701, 'objectType': 'AV', 'objectId': 18, 'objectName': 'total_air_req_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'standardFieldName': 'pressurization_request_count'},
+			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1', 'name': 'Supply Fan Status', 'type': 'BBI', 'path': '#1118th_ahu_10_1/sf_status', 'deviceId': 303701, 'objectType': 'BI', 'objectId': 9, 'objectName': 'sf_status_1', 'units': 'no-units', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'standardFieldName': 'supply_fan_run_status'},
+			{'location': '/One city block/111 8th/10th Floor/AHU-10-1 & OAF-10-1', 'controlProgram': 'AHU-10-1 TPI', 'name': 'CW Temp', 'type': 'BAV', 'path': '#1118th_ahu-10-1_tpi/cwt', 'deviceId': 300084, 'objectType': 'AV', 'objectId': 20, 'objectName': 'cwt_2', 'units': 'degrees-fahrenheit', 'required': 'YES', 'manuallyMapped': None, 'building': 'US-NYC-9TH', 'generalType': 'FCU', 'typeName': None, 'assetName': 'AHU-10-1', 'standardFieldName': 'chilled_supply_water_temperature_sensor'}
 		]
 
 	assets = Assets()

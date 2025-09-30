@@ -62,7 +62,6 @@ _REQ_OUTPUT_HEADERS = [
         'generaltype',
         'typename',
         'assetname',
-        'fullassetpath',
         'standardfieldname',
         'ismissing'
         ]
@@ -74,7 +73,6 @@ _REQ_OUTPUT_HEADERS_ORIG = [
         'generalType',
         'typeName',
         'assetName',
-        'fullAssetPath',
         'standardFieldName',
         'isMissing'
         ]
@@ -108,7 +106,6 @@ _STD_ORDERED_HEADERS = [
         'generaltype',
         'typename',
         'assetname',
-        'fullassetpath',
         'standardfieldname',
         'requiredconf',
         'standardfieldnameconf',
@@ -515,7 +512,7 @@ class Loadsheet:
         Checks:
          1) Required is always in {YES, NO}
          2) non-null fields are filled in where required is YES
-         3) there are no duplicate fullAssetPath-standardFieldName pairs
+         3) there are no duplicate assetName-standardFieldName pairs
 
          Args:
              non_null_fields - fields that are checked to have values in step 2
@@ -523,7 +520,6 @@ class Loadsheet:
                                   'building',
                                   'generalType',
                                   'assetName',
-                                  'fullAssetPath',
                                   'standardFieldName',
                                   'deviceId',
                                   'objectType',
@@ -541,7 +537,6 @@ class Loadsheet:
                     'building',
                     'generaltype',
                     'assetname',
-                    'fullassetpath',
                     'standardfieldname',
                     'deviceid',
                     'objecttype',
@@ -564,7 +559,7 @@ class Loadsheet:
                       [f"\t\t{uid + 2}" for uid in null_fields]
                      )
 
-        #check for duplicate fullAssetPath-standardFieldName combos
+        #check for duplicate assetName-standardFieldName combos
         repeat_uid = self._get_duplicate_asset_fields(df)
         assert len(repeat_uid) == 0, '\n'.join(
                       ["There are duplicated asset-field combinations:"]+
@@ -587,7 +582,6 @@ class Loadsheet:
                         'building',
                         'generaltype',
                         'assetname',
-                        'fullassetpath',
                         'standardfieldname',
                         'deviceid',
                         'objecttype',
@@ -611,7 +605,7 @@ class Loadsheet:
                 for uid in null_fields:
                     print(f"\t\t{uid}")
 
-            #check for duplicate fullAssetPath-standardFieldName combos
+            #check for duplicate assetName-standardFieldName combos
             repeat_uid = self._get_duplicate_asset_fields(df)
             if len(repeat_uid) > 0:
                 print(f"[ERROR]\tThere are duplicated asset-field combinations:")
@@ -647,9 +641,9 @@ class Loadsheet:
             data: pd.DataFrame
             ) -> List[str]:
         '''
-        finds and returns a list of duplicate FullAssetPath-StandardFieldName pairs
+        finds and returns a list of duplicate assetName-StandardFieldName pairs
         '''
-        data['uid'] = data['fullassetpath'] + ' ' + data['standardfieldname']
+        data['uid'] = data['assetname'] + ' ' + data['standardfieldname']
         df = data[data['required'] == 'YES']
         counts = df['uid'].value_counts()
         df_counts = pd.DataFrame({'uid':counts.index, 'amt':counts.values})
