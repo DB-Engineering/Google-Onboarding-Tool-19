@@ -214,7 +214,7 @@ class Mapper(cmd.Cmd):
         elif not (self.handler.payload_path or self.handler.last_loadsheet_path):
             print("[ERROR]\t Payload and valid loadsheet must be imported before export an ABEL spreadsheet.")
         else:
-        # try:
+        try:
             if len(inputs) == 2:
                 self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
                                                     payload_path=self.handler.payload_path, 
@@ -224,8 +224,8 @@ class Mapper(cmd.Cmd):
                 self.handler.export_abel_spreadsheet(excel_path=self.handler.last_loadsheet_path, 
                                                         payload_path=self.handler.payload_path,
                                                         building_config_path=self.handler.bc_path)
-        # except Exception as e:
-        #     print(f"[ERROR]\t Could not convert loadsheet: {e}.")
+        except Exception as e:
+            print(f"[ERROR]\t Could not convert loadsheet: {e}.")
 
     def do_validate(self,args):
         """			Validate the loadsheet data against the ontology.
