@@ -71,19 +71,22 @@ def map_units(fieldname):
     
 def map_states(field_name, raw_state):
     return_value = None
-    if isinstance(raw_state, tuple):
-        if raw_state[0]=="active":
+    if isinstance(raw_state, str):
+        if raw_state=="active":
             if "alarm" in field_name: return_value = "ACTIVE"
             if "occupancy_status" in field_name: return_value = "OCCUPIED"
+            if "user_occupancy_override_status" in field_name: return_value = "ENABLED"
             if any(["run_command" in field_name, "run_status" in field_name]): return_value = "ON"
             if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "OPEN"
             if any(["valve_command" in field_name, "valve_status" in field_name]):  return_value = "OPEN"
             if all(["economizer" in field_name, "mode" in field_name]):  return_value = "ON"
-        if raw_state[0]=="inactive":
+        if raw_state=="inactive":
             if "alarm" in field_name: return_value = "INACTIVE"
             if "occupancy_status" in field_name: return_value = "UNOCCUPIED"
+            if field_name=="user_occupancy_override_status": return_value = "DISABLED"
             if any(["run_command" in field_name, "run_status" in field_name]): return_value = "OFF"
             if any(["damper_command" in field_name, "damper_status" in field_name]): return_value = "CLOSED"
             if any(["valve_command" in field_name, "valve_status" in field_name]): return_value = "CLOSED"
             if all(["economizer" in field_name, "mode" in field_name]):  return_value = "OFF"
+    else: print(raw_state)
     return return_value

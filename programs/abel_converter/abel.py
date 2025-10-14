@@ -20,6 +20,13 @@ import uuid
 
 from abel_converter import value_mapping
 
+def safe_json_load(x):
+    try:
+        if pd.isna(x) or not str(x).strip():
+            return None
+        return json.loads(x)
+    except (json.JSONDecodeError, TypeError):
+        return {}
 class Abel():
     def __init__(self):
         self.abel = {
@@ -90,7 +97,6 @@ class Abel():
         # Flags TBD
         self.LOADSHEET_IMPORTED = False
         self.PAYLOAD_IMPORTED = False
-
 
     def import_loadsheet(self, path):
         """
@@ -247,20 +253,28 @@ class Abel():
             return dataframe
 
         def get_states(active, inactive, multi):
-            multi_enum = [(ix+1, val) for ix, val in enumerate(multi)] if multi else np.nan
-            return [('active', active), ('inactive', inactive)] if all([active, inactive]) else multi_enum
+            if all([not active, not inactive, not multi]):
+                return ['active', 'inactive']
+            if active and inactive:
+                return ['active', 'inactive']
+            if isinstance(multi, list):
+                return [(ix+1, val) for ix, val in enumerate(multi)] if multi else np.nan
+            if isinstance(multi, str):
+                return ['active', 'inactive']
         
         if not path:
             return
         
         payload_data = pd.read_csv(path, dtype={'externalId':'str'})
+        payload_data.columns = ['externalId', 'deviceId', 'entity_code', 'entity_guid', 'building',
+                                'building_guid', 'created', 'discoveryresult']
         payload_data.dropna(how='any', inplace=True)
         payload_data.loc[payload_data['entity_code'].isna()==False, 'code'] = 'EMPTY CODE: PLACEHOLDER'
 
         self.site_code = payload_data.loc[0, 'building']
         self.site_guid = payload_data.loc[0, 'building_guid']
 
-        payload_data['discoveryresult'] = payload_data['discoveryresult'].apply(lambda x: json.loads(x))
+        payload_data['discoveryresult'] = payload_data['discoveryresult'].apply(safe_json_load)
 
         payload_data['rawFieldName'] = payload_data['discoveryresult'].apply(lambda x: list(x['data'].keys()) if x.get('data') else ['MISSING DATA'])
         payload_data = payload_data.explode('rawFieldName')
@@ -273,7 +287,7 @@ class Abel():
                                                     x['data'].get('state-text', None)), axis=1)
 
         payload_data['rawFieldName'] =  payload_data['rawFieldName'].apply(lambda x: 'data.' + x + '.present-value')
-        payload_data['deviceId'] = payload_data['discoveryresult'].apply(lambda x: x['device'].replace('bacnet-', 'DEV:'))
+        payload_data['deviceId'] = payload_data['deviceId'].str.replace('bacnet:', 'DEV:')
         payload_data = payload_data.rename(columns={'externalId': 'cloudDeviceId',
                                      'entity_code': 'entityCode',
                                      'entity_guid': 'reportingEntityGuid'
@@ -398,8 +412,12 @@ class Abel():
         states = states.loc[(states['rawFieldName'].str.contains('binary')==True) 
                                     | (self.entity_fields_data['rawFieldName'].str.contains('multi-state')==True)]\
                                    [['reportingEntityCode', 'reportingEntityField', 'standardFieldName', 'state', 'reportingEntityGuid']]          # get binary and multistate fields
-        states = states.explode('state').sort_values(['reportingEntityCode', 'reportingEntityField', 'state']).drop_duplicates()                   # flatten states
-        states['rawStateValue'] = states.state.apply(lambda x: x[1] if isinstance(x, tuple) else x)
+        # add state placeholders
+        state_placeholder = 'active, inactive'
+        states.loc[states['state'].isna()==True, 'state'] = states.loc[states['state'].isna()==True, 'state'].apply(lambda x: state_placeholder.split(', ') if pd.isna(x) else x)
+
+        states = states.explode('state').sort_values(['reportingEntityCode', 'reportingEntityField']).drop_duplicates()                   # flatten states
+        states['rawStateValue'] = states.state.apply(lambda x: x[1] if isinstance(x, tuple) else "")
         states['rawState'] = states.state.apply(lambda x: x[0] if isinstance(x, tuple) else x)
         states['dboStandardState'] = states.apply(lambda x: value_mapping.map_states(x['standardFieldName'], x['state']), axis=1)   # map raw states to dbo standard states
 
@@ -436,13 +454,13 @@ class Abel():
         for key, val in building_config.items():
             if val.get('links'):
                 existing_virtual_entities[val.get('code')] = {'guid' : key,
-                                                              'etag': val.get('etag')}
+                                                              'etag': str(val.get('etag'))}
         if type(self.entity_data)==pd.DataFrame:
             self.entity_data['isExisting'] = ''
             for key, val in existing_virtual_entities.items():
                 self.entity_data.loc[self.entity_data['entityCode']==key, 'isExisting'] = ['YES']
                 self.entity_data.loc[self.entity_data['entityCode']==key, 'entityGuid'] = val.get('guid')
-                self.entity_data.loc[self.entity_data['entityCode']==key, 'etag'] = val.get('etag')
+                self.entity_data.loc[self.entity_data['entityCode']==key, 'etag'] = str(val.get('etag'))
                 self.entity_data.loc[self.entity_data['entityCode']==key, 'entityCode'] = key
                 self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityGuid'] = val.get('guid')
                 self.entity_fields_data.loc[self.entity_fields_data['entityCode']==key, 'entityCode'] = key
