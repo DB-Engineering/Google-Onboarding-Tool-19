@@ -259,8 +259,6 @@ class Abel():
                 return ['active', 'inactive']
             if isinstance(multi, list):
                 return [(ix+1, val) for ix, val in enumerate(multi)] if multi else np.nan
-            if isinstance(multi, str):
-                return ['active', 'inactive']
         
         if not path:
             return
